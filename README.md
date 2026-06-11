@@ -29,6 +29,10 @@ When a new invoice is provided, add an entry to `data/slabs.json`:
 }
 ```
 
+`Paid SGD` should be the all-in card cost. For invoices with multiple cards,
+allocate processing, packing, and shipping fees proportionally by each card's
+invoice JPY amount.
+
 Supported statuses are `Already Shipped`, `Delivered`, `Vaulted`, and `In transit`.
 
 ## GitHub Pages
