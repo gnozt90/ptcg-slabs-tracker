@@ -29,7 +29,7 @@ When a new invoice is provided, add an entry to `data/slabs.json`:
 }
 ```
 
-Supported statuses are `Delivered`, `Vaulted`, and `In transit`.
+Supported statuses are `Already Shipped`, `Delivered`, `Vaulted`, and `In transit`.
 
 ## GitHub Pages
 
