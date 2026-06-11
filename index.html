@@ -8,9 +8,10 @@
   </head>
   <body>
     <header class="app-header">
-      <div>
+      <div class="hero-copy">
         <p class="eyebrow">Pokemon TCG graded slabs</p>
         <h1>Slabs Tracker</h1>
+        <p class="hero-subtitle">Track purchase cost, market baseline, certification, and storage status in one view.</p>
       </div>
       <div class="last-updated" id="lastUpdated">Loading data...</div>
     </header>
@@ -32,47 +33,58 @@
         <article class="metric">
           <span>Cards</span>
           <strong id="cardCount">-</strong>
+          <small id="statusBreakdown">-</small>
         </article>
       </section>
 
-      <section class="controls" aria-label="Tracker controls">
-        <label class="search">
-          <span>Search</span>
-          <input id="searchInput" type="search" placeholder="Card, cert, grade">
-        </label>
-        <label>
-          <span>Status</span>
-          <select id="statusFilter">
-            <option value="all">All</option>
-            <option value="Already Shipped">Already Shipped</option>
-            <option value="Delivered">Delivered</option>
-            <option value="Vaulted">Vaulted</option>
-            <option value="In transit">In transit</option>
-          </select>
-        </label>
-      </section>
+      <section class="tracker-panel" aria-label="Slabs tracker">
+        <div class="panel-header">
+          <div>
+            <h2>Collection</h2>
+            <p>Search by card, cert, grade, set, or market source.</p>
+          </div>
+          <div class="status-pills" id="statusPills" aria-label="Status summary"></div>
+        </div>
 
-      <section class="table-shell" aria-label="Slabs table">
-        <table>
-          <thead>
-            <tr>
-              <th>Purchase Date</th>
-              <th>Card</th>
-              <th>Cert</th>
-              <th>Grade</th>
-              <th class="numeric">Paid SGD</th>
-              <th class="numeric">Market SGD</th>
-              <th class="numeric">Gain/Loss SGD</th>
-              <th class="numeric">Gain/Loss %</th>
-              <th>Delivered/Vaulted</th>
-            </tr>
-          </thead>
-          <tbody id="slabsBody">
-            <tr>
-              <td colspan="9" class="empty">Loading slabs...</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="controls" aria-label="Tracker controls">
+          <label class="search">
+            <span>Search</span>
+            <input id="searchInput" type="search" placeholder="Card, cert, grade">
+          </label>
+          <label>
+            <span>Status</span>
+            <select id="statusFilter">
+              <option value="all">All</option>
+              <option value="Already Shipped">Already Shipped</option>
+              <option value="Delivered">Delivered</option>
+              <option value="Vaulted">Vaulted</option>
+              <option value="In transit">In transit</option>
+            </select>
+          </label>
+        </div>
+
+        <section class="table-shell" aria-label="Slabs table">
+          <table>
+            <thead>
+              <tr>
+                <th>Purchase Date</th>
+                <th>Card</th>
+                <th>Cert</th>
+                <th>Grade</th>
+                <th class="numeric">Paid SGD</th>
+                <th class="numeric">Market SGD</th>
+                <th class="numeric">Gain/Loss SGD</th>
+                <th class="numeric">Gain/Loss %</th>
+                <th>Delivered/Vaulted</th>
+              </tr>
+            </thead>
+            <tbody id="slabsBody">
+              <tr>
+                <td colspan="9" class="empty">Loading slabs...</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
       </section>
 
       <section class="notes">
