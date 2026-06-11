@@ -20,7 +20,9 @@
       "marketSourceName": "Invoice baseline - market pending",
       "marketSourceUrl": "https://www.cardova.co.jp/en/my-page/invoice/print/01KSD15ABABMYZC2Z7696H0SR7",
       "invoiceJPY": 23310,
-      "paidJPYAllIn": 25203.85
+      "paidJPYAllIn": 25203.85,
+      "processingFeeJPY": 945.93,
+      "shippingPackingFeeJPY": 947.93
     },
     {
       "card": "2021 Pokemon Japanese Reshiram Mirror 25th Anniversary Collection #010",
@@ -35,7 +37,9 @@
       "marketSourceName": "Invoice baseline - market pending",
       "marketSourceUrl": "https://www.cardova.co.jp/en/my-page/invoice/print/01KSD15ABABMYZC2Z7696H0SR7",
       "invoiceJPY": 7992,
-      "paidJPYAllIn": 8641.32
+      "paidJPYAllIn": 8641.32,
+      "processingFeeJPY": 324.32,
+      "shippingPackingFeeJPY": 325
     },
     {
       "card": "2021 Pokemon Japanese Pikachu V Mirror Start Deck 100 #129",
@@ -50,7 +54,9 @@
       "marketSourceName": "Invoice baseline - market pending",
       "marketSourceUrl": "https://www.cardova.co.jp/en/my-page/invoice/print/01KSD15ABABMYZC2Z7696H0SR7",
       "invoiceJPY": 17760,
-      "paidJPYAllIn": 19202.94
+      "paidJPYAllIn": 19202.94,
+      "processingFeeJPY": 720.7,
+      "shippingPackingFeeJPY": 722.23
     },
     {
       "card": "2022 Pokemon Japanese Pikachu Promo Holo Pokemon Go Card File Set #272/S-P",
@@ -65,7 +71,9 @@
       "marketSourceName": "Invoice baseline - market pending",
       "marketSourceUrl": "https://www.cardova.co.jp/en/my-page/invoice/print/01KSD15ABABMYZC2Z7696H0SR7",
       "invoiceJPY": 26640,
-      "paidJPYAllIn": 28804.41
+      "paidJPYAllIn": 28804.41,
+      "processingFeeJPY": 1081.06,
+      "shippingPackingFeeJPY": 1083.35
     },
     {
       "card": "2022 Pokemon Japanese Mew VMAX RRR FA VSTAR Universe #054",
@@ -80,7 +88,9 @@
       "marketSourceName": "Invoice baseline - market pending",
       "marketSourceUrl": "https://www.cardova.co.jp/en/my-page/invoice/print/01KSD15ABABMYZC2Z7696H0SR7",
       "invoiceJPY": 13875,
-      "paidJPYAllIn": 15002.29
+      "paidJPYAllIn": 15002.29,
+      "processingFeeJPY": 563.05,
+      "shippingPackingFeeJPY": 564.24
     },
     {
       "card": "2022 Pokemon Japanese Origin Forme Palkia VSTAR RRR VSTAR Universe S12a #028",
@@ -95,7 +105,9 @@
       "marketSourceName": "Invoice baseline - market pending",
       "marketSourceUrl": "https://www.cardova.co.jp/en/my-page/invoice/print/01KSD15ABABMYZC2Z7696H0SR7",
       "invoiceJPY": 4995,
-      "paidJPYAllIn": 5400.83
+      "paidJPYAllIn": 5400.83,
+      "processingFeeJPY": 202.7,
+      "shippingPackingFeeJPY": 203.13
     },
     {
       "card": "2022 Pokemon Japanese Arceus VSTAR RRR Star Birth S9 #084",
@@ -110,7 +122,9 @@
       "marketSourceName": "Invoice baseline - market pending",
       "marketSourceUrl": "https://www.cardova.co.jp/en/my-page/invoice/print/01KSD15ABABMYZC2Z7696H0SR7",
       "invoiceJPY": 7104,
-      "paidJPYAllIn": 7681.17
+      "paidJPYAllIn": 7681.17,
+      "processingFeeJPY": 288.28,
+      "shippingPackingFeeJPY": 288.89
     },
     {
       "card": "2022 Pokemon Japanese Pikachu C Dark Phantasma #014",
@@ -125,7 +139,9 @@
       "marketSourceName": "Invoice baseline - market pending",
       "marketSourceUrl": "https://www.cardova.co.jp/en/my-page/invoice/print/01KSD15ABABMYZC2Z7696H0SR7",
       "invoiceJPY": 25530,
-      "paidJPYAllIn": 27604.22
+      "paidJPYAllIn": 27604.22,
+      "processingFeeJPY": 1036.01,
+      "shippingPackingFeeJPY": 1038.21
     },
     {
       "card": "2022 Pokemon Japanese Kyurem VMAX RRR FA Lost Abyss #030",
@@ -140,7 +156,9 @@
       "marketSourceName": "Invoice baseline - market pending",
       "marketSourceUrl": "https://www.cardova.co.jp/en/my-page/invoice/print/01KSD15ABABMYZC2Z7696H0SR7",
       "invoiceJPY": 4440,
-      "paidJPYAllIn": 4800.73
+      "paidJPYAllIn": 4800.73,
+      "processingFeeJPY": 180.18,
+      "shippingPackingFeeJPY": 180.56
     },
     {
       "card": "2023 Pokemon Japanese Hitmonchan Classic #012",
@@ -155,7 +173,9 @@
       "marketSourceName": "Invoice baseline - market pending",
       "marketSourceUrl": "https://www.cardova.co.jp/en/my-page/invoice/print/01KSD15ABABMYZC2Z7696H0SR7",
       "invoiceJPY": 9768,
-      "paidJPYAllIn": 10561.62
+      "paidJPYAllIn": 10561.62,
+      "processingFeeJPY": 396.39,
+      "shippingPackingFeeJPY": 397.23
     },
     {
       "card": "2023 Pokemon Japanese Hitmonlee Classic #011",
@@ -170,7 +190,18 @@
       "marketSourceName": "Invoice baseline - market pending",
       "marketSourceUrl": "https://www.cardova.co.jp/en/my-page/invoice/print/01KSD15ABABMYZC2Z7696H0SR7",
       "invoiceJPY": 9768,
-      "paidJPYAllIn": 10561.62
+      "paidJPYAllIn": 10561.62,
+      "processingFeeJPY": 396.39,
+      "shippingPackingFeeJPY": 397.23
     }
-  ]
+  ],
+  "invoiceAllocation": {
+    "invoice": "01KSD15ABABMYZC2Z7696H0SR7",
+    "method": "Fees allocated proportionally by each card invoice JPY amount.",
+    "itemSubtotalJPY": 151182,
+    "processingFeeJPY": 6135,
+    "packingFeeJPY": 800,
+    "shippingFeeJPY": 5348,
+    "creditCardTotalJPY": 163465
+  }
 }
