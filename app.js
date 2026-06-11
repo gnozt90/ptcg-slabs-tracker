@@ -44,9 +44,17 @@ function formatPercent(value) {
 
 function formatCert(slab) {
   const cert = escapeHtml(slab.cert);
-  if (!String(slab.grade ?? "").toUpperCase().startsWith("PSA")) return cert;
+  const grade = String(slab.grade ?? "").toUpperCase();
 
-  return `<a class="cert-link" href="https://www.psacard.com/cert/${cert}/psa" target="_blank" rel="noreferrer">${cert}</a>`;
+  if (grade.startsWith("PSA")) {
+    return `<a class="cert-link" href="https://www.psacard.com/cert/${cert}/psa" target="_blank" rel="noreferrer">${cert}</a>`;
+  }
+
+  if (grade.startsWith("ACE")) {
+    return `<a class="cert-link" href="https://acegrading.com/cert" target="_blank" rel="noreferrer" title="Open ACE certification lookup">${cert}</a>`;
+  }
+
+  return cert;
 }
 
 function escapeHtml(value) {
@@ -106,21 +114,21 @@ function renderTable(slabs) {
 
       return `
         <tr>
-          <td class="date-cell">${escapeHtml(slab.purchaseDate)}</td>
-          <td class="card-name">
+          <td class="date-cell" data-label="Purchase Date">${escapeHtml(slab.purchaseDate)}</td>
+          <td class="card-name" data-label="Card">
             ${escapeHtml(slab.card)}
             <span class="subtle">${escapeHtml(slab.set)}</span>
           </td>
-          <td>${formatCert(slab)}</td>
-          <td>${escapeHtml(slab.grade)}</td>
-          <td class="numeric">${formatCurrency(slab.paidSGD)}</td>
-          <td class="numeric">
+          <td data-label="Cert">${formatCert(slab)}</td>
+          <td data-label="Grade">${escapeHtml(slab.grade)}</td>
+          <td class="numeric" data-label="Paid SGD">${formatCurrency(slab.paidSGD)}</td>
+          <td class="numeric" data-label="Market SGD">
             ${formatCurrency(slab.marketSGD)}
             <span class="subtle">${marketSource}${slab.marketDate ? ` | ${escapeHtml(slab.marketDate)}` : ""}</span>
           </td>
-          <td class="numeric">${formatGain(gain)}</td>
-          <td class="numeric">${formatPercent(gainPercent)}</td>
-          <td><span class="status ${statusClass}">${escapeHtml(slab.status)}</span></td>
+          <td class="numeric" data-label="Gain/Loss SGD">${formatGain(gain)}</td>
+          <td class="numeric" data-label="Gain/Loss %">${formatPercent(gainPercent)}</td>
+          <td data-label="Delivered/Vaulted"><span class="status ${statusClass}">${escapeHtml(slab.status)}</span></td>
         </tr>
       `;
     })
