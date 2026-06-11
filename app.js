@@ -42,6 +42,13 @@ function formatPercent(value) {
   return `<span class="${className}">${percentFormatter.format(value)}%</span>`;
 }
 
+function formatCert(slab) {
+  const cert = escapeHtml(slab.cert);
+  if (!String(slab.grade ?? "").toUpperCase().startsWith("PSA")) return cert;
+
+  return `<a class="cert-link" href="https://www.psacard.com/cert/${cert}/psa" target="_blank" rel="noreferrer">${cert}</a>`;
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -104,7 +111,7 @@ function renderTable(slabs) {
             ${escapeHtml(slab.card)}
             <span class="subtle">${escapeHtml(slab.set)}</span>
           </td>
-          <td>${escapeHtml(slab.cert)}</td>
+          <td>${formatCert(slab)}</td>
           <td>${escapeHtml(slab.grade)}</td>
           <td class="numeric">${formatCurrency(slab.paidSGD)}</td>
           <td class="numeric">
