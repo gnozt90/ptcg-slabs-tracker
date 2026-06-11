@@ -84,7 +84,7 @@ function renderSummary(slabs) {
 
 function renderTable(slabs) {
   if (!slabs.length) {
-    elements.body.innerHTML = '<tr><td colspan="8" class="empty">No slabs match the current filters.</td></tr>';
+    elements.body.innerHTML = '<tr><td colspan="9" class="empty">No slabs match the current filters.</td></tr>';
     return;
   }
 
@@ -99,9 +99,10 @@ function renderTable(slabs) {
 
       return `
         <tr>
+          <td class="date-cell">${escapeHtml(slab.purchaseDate)}</td>
           <td class="card-name">
             ${escapeHtml(slab.card)}
-            <span class="subtle">${escapeHtml([slab.set, slab.purchaseDate].filter(Boolean).join(" | "))}</span>
+            <span class="subtle">${escapeHtml(slab.set)}</span>
           </td>
           <td>${escapeHtml(slab.cert)}</td>
           <td>${escapeHtml(slab.grade)}</td>
@@ -136,7 +137,7 @@ async function loadSlabs() {
     render();
   } catch (error) {
     elements.lastUpdated.textContent = "Data failed to load";
-    elements.body.innerHTML = `<tr><td colspan="8" class="empty">${escapeHtml(error.message)}</td></tr>`;
+    elements.body.innerHTML = `<tr><td colspan="9" class="empty">${escapeHtml(error.message)}</td></tr>`;
   }
 }
 
