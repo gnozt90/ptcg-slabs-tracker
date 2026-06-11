@@ -59,6 +59,31 @@ function formatCert(slab) {
   return cert;
 }
 
+function formatSlabImage(slab) {
+  const frontUrl = slab.slabImageUrl;
+  const backUrl = slab.slabImageBackUrl;
+
+  if (!frontUrl) {
+    return '<span class="image-pending">Pending</span>';
+  }
+
+  const imageAlt = `Slab image for ${slab.card}`;
+  const previewImages = [frontUrl, backUrl]
+    .filter(Boolean)
+    .map(
+      (url) =>
+        `<img src="${escapeHtml(url)}" alt="${escapeHtml(imageAlt)}" loading="lazy">`,
+    )
+    .join("");
+
+  return `
+    <a class="slab-image-link" href="${escapeHtml(frontUrl)}" target="_blank" rel="noreferrer" aria-label="${escapeHtml(imageAlt)}">
+      <img class="slab-thumb" src="${escapeHtml(frontUrl)}" alt="${escapeHtml(imageAlt)}" loading="lazy">
+      <span class="slab-preview" aria-hidden="true">${previewImages}</span>
+    </a>
+  `;
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -115,7 +140,7 @@ function renderSummary(slabs) {
 
 function renderTable(slabs) {
   if (!slabs.length) {
-    elements.body.innerHTML = '<tr><td colspan="9" class="empty">No slabs match the current filters.</td></tr>';
+    elements.body.innerHTML = '<tr><td colspan="10" class="empty">No slabs match the current filters.</td></tr>';
     return;
   }
 
@@ -131,6 +156,7 @@ function renderTable(slabs) {
       return `
         <tr>
           <td class="date-cell" data-label="Purchase Date">${escapeHtml(slab.purchaseDate)}</td>
+          <td class="slab-image-cell" data-label="Slab">${formatSlabImage(slab)}</td>
           <td class="card-name" data-label="Card">
             ${escapeHtml(slab.card)}
             <span class="subtle">${escapeHtml(slab.set)}</span>
@@ -168,7 +194,7 @@ async function loadSlabs() {
     render();
   } catch (error) {
     elements.lastUpdated.textContent = "Data failed to load";
-    elements.body.innerHTML = `<tr><td colspan="9" class="empty">${escapeHtml(error.message)}</td></tr>`;
+    elements.body.innerHTML = `<tr><td colspan="10" class="empty">${escapeHtml(error.message)}</td></tr>`;
   }
 }
 
