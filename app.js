@@ -21,6 +21,8 @@ const elements = {
   totalMarket: document.querySelector("#totalMarket"),
   totalGain: document.querySelector("#totalGain"),
   cardCount: document.querySelector("#cardCount"),
+  statusBreakdown: document.querySelector("#statusBreakdown"),
+  statusPills: document.querySelector("#statusPills"),
   lastUpdated: document.querySelector("#lastUpdated"),
   searchInput: document.querySelector("#searchInput"),
   statusFilter: document.querySelector("#statusFilter"),
@@ -90,11 +92,25 @@ function renderSummary(slabs) {
   const totalPaid = slabs.reduce((sum, slab) => sum + slab.paidSGD, 0);
   const totalMarket = slabs.reduce((sum, slab) => sum + slab.marketSGD, 0);
   const totalGain = totalMarket - totalPaid;
+  const statusCounts = slabs.reduce((counts, slab) => {
+    counts[slab.status] = (counts[slab.status] || 0) + 1;
+    return counts;
+  }, {});
+  const statusText = Object.entries(statusCounts)
+    .map(([status, count]) => `${count} ${status}`)
+    .join(" / ");
 
   elements.totalPaid.textContent = formatCurrency(totalPaid);
   elements.totalMarket.textContent = formatCurrency(totalMarket);
   elements.totalGain.innerHTML = formatGain(totalGain);
   elements.cardCount.textContent = String(slabs.length);
+  elements.statusBreakdown.textContent = statusText || "-";
+  elements.statusPills.innerHTML = Object.entries(statusCounts)
+    .map(([status, count]) => {
+      const statusClass = status.toLowerCase().replaceAll(" ", "-");
+      return `<span class="status-pill ${statusClass}"><strong>${count}</strong> ${escapeHtml(status)}</span>`;
+    })
+    .join("");
 }
 
 function renderTable(slabs) {
