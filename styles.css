@@ -300,6 +300,93 @@ code {
   select {
     min-width: 100%;
   }
+
+  .table-shell {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  table,
+  thead,
+  tbody,
+  tr,
+  th,
+  td {
+    display: block;
+  }
+
+  table {
+    min-width: 0;
+  }
+
+  thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  tbody tr {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  tbody tr:hover {
+    background: var(--panel);
+  }
+
+  td {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(112px, 36%) minmax(0, 1fr);
+    gap: 12px;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--line);
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 750;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  .card-name {
+    min-width: 0;
+    text-align: left;
+  }
+
+  .date-cell,
+  .numeric {
+    text-align: right;
+  }
+
+  .empty {
+    display: block;
+    height: auto;
+    padding: 48px 16px;
+    text-align: center;
+  }
+
+  .empty::before {
+    content: "";
+  }
 }
 
 @media (max-width: 460px) {
