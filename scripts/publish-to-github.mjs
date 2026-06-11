@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { createInterface } from "node:readline/promises";
+import { stdin } from "node:process";
 
 const owner = "gnozt90";
 const repo = "ptcg-slabs-tracker";
@@ -15,9 +15,13 @@ const files = [
   "styles.css",
 ];
 
-const input = createInterface({ input: process.stdin, output: process.stdout, terminal: false });
-const token = (await input.question("")).trim();
-input.close();
+async function readToken() {
+  const chunks = [];
+  for await (const chunk of stdin) chunks.push(chunk);
+  return Buffer.concat(chunks).toString("utf8").trim();
+}
+
+const token = await readToken();
 
 if (!token) {
   throw new Error("GitHub token is required on stdin.");
@@ -47,31 +51,41 @@ async function github(path, options = {}) {
   return data;
 }
 
-async function getExistingSha(path) {
-  try {
-    const data = await github(`/repos/${owner}/${repo}/contents/${encodeURIComponent(path).replaceAll("%2F", "/")}?ref=${branch}`);
-    return Array.isArray(data) ? null : data.sha;
-  } catch (error) {
-    if (error.status === 404 || error.status === 409) return null;
-    throw error;
-  }
+const ref = await github(`/repos/${owner}/${repo}/git/ref/heads/${branch}`);
+const headSha = ref.object.sha;
+const headCommit = await github(`/repos/${owner}/${repo}/git/commits/${headSha}`);
+
+const tree = [];
+for (const file of files) {
+  tree.push({
+    path: file,
+    mode: "100644",
+    type: "blob",
+    content: await readFile(file, "utf8"),
+  });
 }
 
-const uploaded = [];
-for (const file of files) {
-  const content = await readFile(file);
-  const sha = await getExistingSha(file);
-  const result = await github(`/repos/${owner}/${repo}/contents/${encodeURIComponent(file).replaceAll("%2F", "/")}`, {
-    method: "PUT",
-    body: JSON.stringify({
-      message: `${sha ? "Update" : "Add"} ${file}`,
-      content: content.toString("base64"),
-      branch,
-      ...(sha ? { sha } : {}),
-    }),
-  });
-  uploaded.push({ path: file, commit: result.commit.sha });
-}
+const nextTree = await github(`/repos/${owner}/${repo}/git/trees`, {
+  method: "POST",
+  body: JSON.stringify({
+    base_tree: headCommit.tree.sha,
+    tree,
+  }),
+});
+
+const commit = await github(`/repos/${owner}/${repo}/git/commits`, {
+  method: "POST",
+  body: JSON.stringify({
+    message: "Publish tracker site",
+    tree: nextTree.sha,
+    parents: [headSha],
+  }),
+});
+
+await github(`/repos/${owner}/${repo}/git/refs/heads/${branch}`, {
+  method: "PATCH",
+  body: JSON.stringify({ sha: commit.sha, force: false }),
+});
 
 let pages;
 try {
@@ -88,6 +102,6 @@ try {
 
 console.log(JSON.stringify({
   repo: `https://github.com/${owner}/${repo}`,
+  commit: commit.sha,
   pages: pages.html_url,
-  uploaded,
 }, null, 2));
