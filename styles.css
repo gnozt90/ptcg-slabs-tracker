@@ -187,6 +187,17 @@ tbody tr:last-child td {
   white-space: nowrap;
 }
 
+.cert-link {
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration-color: rgba(29, 53, 87, 0.35);
+  text-underline-offset: 3px;
+}
+
+.cert-link:hover {
+  text-decoration-color: var(--ink);
+}
+
 .subtle {
   display: block;
   margin-top: 4px;
