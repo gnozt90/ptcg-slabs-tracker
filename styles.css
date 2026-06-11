@@ -1,6 +1,6 @@
 :root {
   color-scheme: light;
-  --bg: #f6f7f4;
+  --bg: #f4f6f5;
   --panel: #ffffff;
   --panel-soft: #eef2ed;
   --text: #1d2522;
@@ -10,7 +10,8 @@
   --red: #b42318;
   --ink: #1d3557;
   --yellow: #f4c430;
-  --shadow: 0 16px 42px rgba(24, 35, 31, 0.09);
+  --shadow: 0 18px 48px rgba(24, 35, 31, 0.09);
+  --shadow-soft: 0 8px 22px rgba(24, 35, 31, 0.07);
 }
 
 * {
@@ -25,18 +26,22 @@ body {
 }
 
 .app-header {
-  min-height: 220px;
-  padding: 42px clamp(18px, 4vw, 56px);
+  min-height: 270px;
+  padding: 42px clamp(18px, 4vw, 56px) 78px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
   background:
-    linear-gradient(135deg, rgba(29, 53, 87, 0.95), rgba(19, 121, 91, 0.9)),
+    linear-gradient(135deg, rgba(16, 35, 53, 0.96), rgba(18, 105, 83, 0.9)),
     url("https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?auto=format&fit=crop&w=1800&q=80");
   background-size: cover;
   background-position: center;
   color: #fff;
+}
+
+.hero-copy {
+  max-width: 760px;
 }
 
 .eyebrow {
@@ -54,6 +59,14 @@ h1 {
   line-height: 0.95;
 }
 
+.hero-subtitle {
+  max-width: 620px;
+  margin: 18px 0 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  line-height: 1.5;
+}
+
 .last-updated {
   padding: 10px 12px;
   border: 1px solid rgba(255, 255, 255, 0.32);
@@ -65,8 +78,8 @@ h1 {
 }
 
 main {
-  width: min(1180px, calc(100% - 32px));
-  margin: -42px auto 48px;
+  width: min(1280px, calc(100% - 32px));
+  margin: -62px auto 48px;
 }
 
 .summary-grid {
@@ -76,7 +89,7 @@ main {
 }
 
 .metric {
-  min-height: 112px;
+  min-height: 118px;
   padding: 18px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -99,8 +112,80 @@ label span {
   font-size: clamp(1.45rem, 3vw, 2rem);
 }
 
+.metric small {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
+.tracker-panel {
+  margin-top: 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 20px 20px 0;
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.panel-header p {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.status-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.status-pill {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel-soft);
+  color: #33423d;
+  font-size: 0.86rem;
+  white-space: nowrap;
+}
+
+.status-pill strong {
+  color: var(--text);
+}
+
+.status-pill.vaulted {
+  background: #eef3fb;
+  color: var(--ink);
+}
+
+.status-pill.already-shipped,
+.status-pill.in-transit {
+  background: #fff6d8;
+  color: #7a5a00;
+}
+
 .controls {
-  margin: 22px 0 14px;
+  margin: 0;
+  padding: 16px 20px 18px;
   display: flex;
   gap: 12px;
   align-items: end;
@@ -114,7 +199,7 @@ label span {
 input,
 select {
   width: 100%;
-  height: 42px;
+  height: 44px;
   margin-top: 7px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -124,20 +209,22 @@ select {
 }
 
 input {
-  padding: 0 12px;
+  padding: 0 14px;
 }
 
 select {
   min-width: 170px;
-  padding: 0 10px;
+  padding: 0 12px;
 }
 
 .table-shell {
+  max-height: 70vh;
   overflow-x: auto;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  overflow-y: auto;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
   background: var(--panel);
-  box-shadow: var(--shadow);
+  box-shadow: none;
 }
 
 table {
@@ -148,13 +235,16 @@ table {
 
 th,
 td {
-  padding: 14px 16px;
+  padding: 13px 16px;
   border-bottom: 1px solid var(--line);
   text-align: left;
   vertical-align: top;
 }
 
 th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   background: var(--panel-soft);
   color: #33423d;
   font-size: 0.78rem;
@@ -163,7 +253,7 @@ th {
 }
 
 tbody tr:hover {
-  background: #fafbf8;
+  background: #f9fbf8;
 }
 
 tbody tr:last-child td {
@@ -176,7 +266,7 @@ tbody tr:last-child td {
 }
 
 .card-name {
-  min-width: 240px;
+  min-width: 320px;
   font-weight: 750;
 }
 
@@ -226,6 +316,7 @@ tbody tr:last-child td {
   color: var(--green);
   font-size: 0.86rem;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .status.vaulted {
@@ -275,7 +366,8 @@ code {
 
 @media (max-width: 760px) {
   .app-header {
-    min-height: 250px;
+    min-height: 310px;
+    padding-bottom: 88px;
     flex-direction: column;
     justify-content: flex-start;
   }
@@ -286,6 +378,7 @@ code {
 
   main {
     width: min(100% - 24px, 1180px);
+    margin-top: -64px;
   }
 
   .summary-grid {
@@ -293,8 +386,18 @@ code {
   }
 
   .controls {
+    padding: 16px;
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .panel-header {
+    padding: 18px 16px 0;
+    flex-direction: column;
+  }
+
+  .status-pills {
+    justify-content: flex-start;
   }
 
   select {
@@ -302,6 +405,7 @@ code {
   }
 
   .table-shell {
+    max-height: none;
     overflow: visible;
     border: 0;
     background: transparent;
@@ -339,7 +443,7 @@ code {
     border: 1px solid var(--line);
     border-radius: 8px;
     background: var(--panel);
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-soft);
     overflow: hidden;
   }
 
@@ -350,7 +454,7 @@ code {
   td {
     min-width: 0;
     display: grid;
-    grid-template-columns: minmax(112px, 36%) minmax(0, 1fr);
+    grid-template-columns: minmax(104px, 34%) minmax(0, 1fr);
     gap: 12px;
     padding: 11px 14px;
     border-bottom: 1px solid var(--line);
@@ -370,6 +474,10 @@ code {
   .card-name {
     min-width: 0;
     text-align: left;
+  }
+
+  .card-name::before {
+    padding-top: 2px;
   }
 
   .date-cell,
@@ -392,5 +500,37 @@ code {
 @media (max-width: 460px) {
   .summary-grid {
     grid-template-columns: 1fr;
+  }
+
+  body {
+    background: #f7f8f6;
+  }
+
+  .app-header {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  main {
+    width: calc(100% - 20px);
+  }
+
+  .metric {
+    min-height: 94px;
+  }
+
+  td {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    text-align: left;
+  }
+
+  .date-cell,
+  .numeric {
+    text-align: left;
+  }
+
+  td::before {
+    font-size: 0.72rem;
   }
 }
