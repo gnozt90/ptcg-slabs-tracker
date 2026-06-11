@@ -220,6 +220,11 @@ tbody tr:last-child td {
   color: #7a5a00;
 }
 
+.status.already-shipped {
+  background: #fff6d8;
+  color: #7a5a00;
+}
+
 .empty {
   height: 180px;
   color: var(--muted);
