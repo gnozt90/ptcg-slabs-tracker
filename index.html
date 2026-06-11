@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PTCG Slabs Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Pokemon TCG graded slabs</p>
+        <h1>Slabs Tracker</h1>
+      </div>
+      <div class="last-updated" id="lastUpdated">Loading data...</div>
+    </header>
+
+    <main>
+      <section class="summary-grid" aria-label="Portfolio summary">
+        <article class="metric">
+          <span>Total Paid</span>
+          <strong id="totalPaid">-</strong>
+        </article>
+        <article class="metric">
+          <span>Market Value</span>
+          <strong id="totalMarket">-</strong>
+        </article>
+        <article class="metric">
+          <span>Gain/Loss</span>
+          <strong id="totalGain">-</strong>
+        </article>
+        <article class="metric">
+          <span>Cards</span>
+          <strong id="cardCount">-</strong>
+        </article>
+      </section>
+
+      <section class="controls" aria-label="Tracker controls">
+        <label class="search">
+          <span>Search</span>
+          <input id="searchInput" type="search" placeholder="Card, cert, grade">
+        </label>
+        <label>
+          <span>Status</span>
+          <select id="statusFilter">
+            <option value="all">All</option>
+            <option value="Delivered">Delivered</option>
+            <option value="Vaulted">Vaulted</option>
+            <option value="In transit">In transit</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="table-shell" aria-label="Slabs table">
+        <table>
+          <thead>
+            <tr>
+              <th>Card</th>
+              <th>Cert</th>
+              <th>Grade</th>
+              <th class="numeric">Paid SGD</th>
+              <th class="numeric">Market SGD</th>
+              <th class="numeric">Gain/Loss SGD</th>
+              <th class="numeric">Gain/Loss %</th>
+              <th>Delivered/Vaulted</th>
+            </tr>
+          </thead>
+          <tbody id="slabsBody">
+            <tr>
+              <td colspan="8" class="empty">Loading slabs...</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="notes">
+        <h2>Market pricing notes</h2>
+        <p>
+          Market values are stored with each slab in <code>data/slabs.json</code>.
+          When you send a new invoice, the card will be added with paid price, cert,
+          grade, status, market price, source, and price date.
+        </p>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
