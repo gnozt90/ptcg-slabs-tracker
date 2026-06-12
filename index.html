@@ -3,44 +3,230 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>PTCG Slabs Tracker</title>
-    <link rel="stylesheet" href="styles.css?v=20260611-slab-images">
+    <title>The Provenance Atlas | PTCG Slabs Tracker</title>
+    <link rel="stylesheet" href="styles.css?v=20260612-provenance-atlas">
   </head>
   <body>
-    <header class="app-header">
-      <div class="hero-copy">
-        <p class="eyebrow">Pokemon TCG graded slabs</p>
-        <h1>Slabs Tracker</h1>
-        <p class="hero-subtitle">Track purchase cost, market baseline, certification, and storage status in one view.</p>
-      </div>
+    <header class="site-header" aria-label="The Provenance Atlas header">
+      <a class="brand-mark" href="#top" aria-label="The Provenance Atlas home">
+        <span class="brand-seal">G</span>
+        <span>
+          <strong>The Provenance Atlas</strong>
+          <small>Collect · Preserve · Document</small>
+        </span>
+      </a>
+      <nav class="site-nav" aria-label="Collection navigation">
+        <a href="#grails">Grails</a>
+        <a href="#analytics">Analytics</a>
+        <a href="#registry">Registry</a>
+      </nav>
       <div class="last-updated" id="lastUpdated">Loading data...</div>
     </header>
 
-    <main>
-      <section class="summary-grid" aria-label="Portfolio summary">
-        <article class="metric">
-          <span>Total Paid</span>
-          <strong id="totalPaid">-</strong>
+    <main id="top">
+      <section class="hero-section" aria-label="Collector portfolio hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Vault archive no. GZ-2026-PTCG</p>
+          <h1>A collector’s record of graded Pokémon TCG artifacts.</h1>
+          <p class="hero-subtitle">
+            A curated single-page atlas for graded slabs, acquisition history,
+            market baselines, provenance notes, and long-term portfolio growth.
+          </p>
+          <div class="hero-actions" aria-label="Primary actions">
+            <a class="button primary" href="#registry">Explore registry</a>
+            <a class="button secondary" href="#analytics">View analytics</a>
+          </div>
+        </div>
+
+        <aside class="collector-card" aria-label="Collector identity">
+          <div class="collector-lockup">
+            <span class="collector-monogram">G</span>
+            <div>
+              <span>Collector</span>
+              <strong>Gnozt</strong>
+              <small>Japanese vintage & modern · PSA focused</small>
+            </div>
+          </div>
+          <dl class="hero-stats">
+            <div>
+              <dt>Portfolio value</dt>
+              <dd id="heroMarket">-</dd>
+            </div>
+            <div>
+              <dt>Total slabs</dt>
+              <dd id="heroCount">-</dd>
+            </div>
+            <div>
+              <dt>Vaulted</dt>
+              <dd id="heroVaulted">-</dd>
+            </div>
+          </dl>
+        </aside>
+      </section>
+
+      <section class="section-block" id="grails" aria-labelledby="grailsTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Featured grails</p>
+            <h2 id="grailsTitle">Curated highlights from the vault</h2>
+          </div>
+          <a class="text-link" href="#registry">View all slabs</a>
+        </div>
+        <div class="grail-rail" id="featuredGrails" aria-live="polite"></div>
+      </section>
+
+      <section class="section-block overview-block" aria-labelledby="overviewTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Collection overview</p>
+            <h2 id="overviewTitle">A living archive by grade, era, language, and custody</h2>
+          </div>
+        </div>
+        <div class="overview-grid">
+          <article class="archive-panel">
+            <h3>By grading company</h3>
+            <div id="gradingBreakdown"></div>
+          </article>
+          <article class="archive-panel">
+            <h3>By era</h3>
+            <div id="eraBreakdown"></div>
+          </article>
+          <article class="archive-panel">
+            <h3>By language</h3>
+            <div id="languageBreakdown"></div>
+          </article>
+          <article class="archive-panel portfolio-health">
+            <span class="grade-badge" id="healthBadge">A</span>
+            <h3>Portfolio health</h3>
+            <p id="portfolioHealth">Loading collection signal...</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-block" id="analytics" aria-labelledby="analyticsTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Analytics & performance</p>
+            <h2 id="analyticsTitle">Investment ledger for the collection</h2>
+          </div>
+          <span class="as-of" id="analyticsDate">As of -</span>
+        </div>
+        <div class="analytics-grid">
+          <article class="archive-panel value-summary">
+            <h3>Value summary</h3>
+            <dl>
+              <div><dt>Total cost basis</dt><dd id="totalPaid">-</dd></div>
+              <div><dt>Market value</dt><dd id="totalMarket">-</dd></div>
+              <div><dt>Unrealized gain / loss</dt><dd id="totalGain">-</dd></div>
+              <div><dt>Unrealized gain / loss %</dt><dd id="totalGainPercent">-</dd></div>
+            </dl>
+          </article>
+          <article class="archive-panel trend-panel">
+            <h3>Acquisition value trend</h3>
+            <div class="trend-line" id="trendLine" aria-label="Acquisition trend chart"></div>
+          </article>
+          <article class="archive-panel">
+            <h3>Grade distribution</h3>
+            <div id="gradeDistribution"></div>
+          </article>
+          <article class="archive-panel">
+            <h3>Diversification score</h3>
+            <strong class="score" id="diversificationScore">-</strong>
+            <p id="diversificationText">Balanced across eras, sets, and formats.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-block" aria-labelledby="provenanceTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Featured grails & provenance</p>
+            <h2 id="provenanceTitle">Documented, verified, remarkable</h2>
+          </div>
+        </div>
+        <div class="provenance-grid" id="provenanceCards"></div>
+      </section>
+
+      <section class="section-block split-section" aria-label="Acquisition history and milestones">
+        <article>
+          <div class="section-heading compact">
+            <div>
+              <p class="eyebrow">Recent acquisitions</p>
+              <h2>New entries in the archive</h2>
+            </div>
+          </div>
+          <div class="acquisition-list" id="recentAcquisitions"></div>
         </article>
-        <article class="metric">
-          <span>Market Value</span>
-          <strong id="totalMarket">-</strong>
+
+        <article>
+          <div class="section-heading compact">
+            <div>
+              <p class="eyebrow">Collection timeline</p>
+              <h2>Milestones and growth</h2>
+            </div>
+          </div>
+          <div class="timeline" id="collectionTimeline"></div>
         </article>
-        <article class="metric">
-          <span>Gain/Loss</span>
-          <strong id="totalGain">-</strong>
-        </article>
-        <article class="metric">
-          <span>Cards</span>
-          <strong id="cardCount">-</strong>
-          <small id="statusBreakdown">-</small>
+
+        <article>
+          <div class="section-heading compact">
+            <div>
+              <p class="eyebrow">Collection milestones</p>
+              <h2>Archive markers</h2>
+            </div>
+          </div>
+          <div class="milestone-list" id="milestones"></div>
         </article>
       </section>
 
-      <section class="tracker-panel" aria-label="Slabs tracker">
+      <section class="section-block insight-grid" aria-label="Portfolio insights">
+        <article class="archive-panel">
+          <p class="eyebrow">Population & rarity insights</p>
+          <div class="rarity-stats" id="rarityStats"></div>
+        </article>
+        <article class="archive-panel">
+          <p class="eyebrow">Top performers</p>
+          <div id="topPerformers"></div>
+        </article>
+        <article class="archive-panel">
+          <p class="eyebrow">Risk & liquidity overview</p>
+          <div class="risk-grid">
+            <div><span>Liquidity</span><strong>Medium</strong></div>
+            <div><span>Market risk</span><strong>Low</strong></div>
+          </div>
+          <p class="panel-copy">Strong concentration in PSA 10 Japanese chase cards, with several invoice-baseline values awaiting fresh market marks.</p>
+        </article>
+      </section>
+
+      <section class="section-block collector-profile" aria-label="Personal collector profile">
+        <article>
+          <p class="eyebrow">Collector profile</p>
+          <h2>Preserve the story behind every slab.</h2>
+          <p>
+            This archive tracks graded Pokémon cards as collectible artifacts:
+            acquisition cost, grading context, certification, custody status,
+            and market baseline all stay visible in one durable ledger.
+          </p>
+          <dl class="profile-facts">
+            <div><dt>Collecting since</dt><dd>2024</dd></div>
+            <div><dt>Focus</dt><dd>Japanese vintage & modern</dd></div>
+            <div><dt>Preference</dt><dd>PSA graded</dd></div>
+            <div><dt>Location</dt><dd>Singapore</dd></div>
+          </dl>
+        </article>
+        <aside class="legacy-cta">
+          <p class="eyebrow">Preserve · Document · Legacy</p>
+          <h2>Built for collection growth.</h2>
+          <p>Every new invoice can become a documented entry with provenance, cost basis, market source, and storage status.</p>
+          <a class="button primary" href="#registry">View full collection</a>
+        </aside>
+      </section>
+
+      <section class="section-block tracker-panel" id="registry" aria-label="Full slabs registry">
         <div class="panel-header">
           <div>
-            <h2>Collection</h2>
+            <p class="eyebrow">Complete registry</p>
+            <h2>Searchable slab ledger</h2>
             <p>Search by card, cert, grade, set, or market source.</p>
           </div>
           <div class="status-pills" id="statusPills" aria-label="Status summary"></div>
@@ -87,17 +273,14 @@
           </table>
         </section>
       </section>
-
-      <section class="notes">
-        <h2>Market pricing notes</h2>
-        <p>
-          Market values are stored with each slab in <code>data/slabs.json</code>.
-          When you send a new invoice, the card will be added with paid price, cert,
-          grade, status, market price, source, and price date.
-        </p>
-      </section>
     </main>
 
-    <script src="app.js?v=20260611-slab-images"></script>
+    <footer class="site-footer">
+      <span>The Provenance Atlas</span>
+      <span>Private & confidential · Collector use only</span>
+      <span>Vault archive no. GZ-2026-PTCG</span>
+    </footer>
+
+    <script src="app.js?v=20260612-provenance-atlas"></script>
   </body>
 </html>
