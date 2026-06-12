@@ -850,6 +850,10 @@ dd {
   flex: 1;
 }
 
+.mobile-sort-control {
+  display: none;
+}
+
 label span {
   display: block;
   color: var(--muted);
@@ -1410,6 +1414,10 @@ tbody tr:hover {
   .slab-list-shell {
     display: block;
     padding: 0 16px 18px;
+  }
+
+  .mobile-sort-control {
+    display: block;
   }
 
   .slab-list-card {
