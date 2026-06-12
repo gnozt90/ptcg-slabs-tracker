@@ -2,6 +2,8 @@ const state = {
   slabs: [],
   query: "",
   status: "all",
+  sortKey: "",
+  sortDirection: "asc",
 };
 
 const currencyFormatter = new Intl.NumberFormat("en-SG", {
@@ -42,6 +44,7 @@ const elements = {
   analyticsDate: document.querySelector("#analyticsDate"),
   searchInput: document.querySelector("#searchInput"),
   statusFilter: document.querySelector("#statusFilter"),
+  sortButtons: document.querySelectorAll("[data-sort-key]"),
   featuredGrails: document.querySelector("#featuredGrails"),
   gradingBreakdown: document.querySelector("#gradingBreakdown"),
   eraBreakdown: document.querySelector("#eraBreakdown"),
@@ -59,6 +62,11 @@ const elements = {
   rarityStats: document.querySelector("#rarityStats"),
   topPerformers: document.querySelector("#topPerformers"),
 };
+
+const collator = new Intl.Collator("en", {
+  sensitivity: "base",
+  numeric: true,
+});
 
 function formatCurrency(value, compact = false) {
   if (typeof value !== "number") return "-";
@@ -167,6 +175,76 @@ function getFilteredSlabs() {
       .toLowerCase();
 
     return statusMatches && (!query || searchable.includes(query));
+  });
+}
+
+function getSortValue(slab, key) {
+  const gain = slab.marketSGD - slab.paidSGD;
+  const gainPercent = slab.paidSGD ? (gain / slab.paidSGD) * 100 : 0;
+
+  switch (key) {
+    case "purchaseDate":
+      return slab.purchaseDate || "";
+    case "slabImage":
+      return slab.slabImageUrl ? 1 : 0;
+    case "card":
+      return `${slab.card || ""} ${slab.set || ""}`;
+    case "cert":
+      return Number(slab.cert) || slab.cert || "";
+    case "grade":
+      return slab.grade || "";
+    case "paidSGD":
+      return slab.paidSGD;
+    case "marketSGD":
+      return slab.marketSGD;
+    case "gainSGD":
+      return gain;
+    case "gainPercent":
+      return gainPercent;
+    case "status":
+      return slab.status || "";
+    default:
+      return "";
+  }
+}
+
+function compareValues(a, b) {
+  if (typeof a === "number" && typeof b === "number") {
+    return a - b;
+  }
+
+  return collator.compare(String(a ?? ""), String(b ?? ""));
+}
+
+function getSortedSlabs(slabs) {
+  if (!state.sortKey) return slabs;
+
+  return slabs
+    .map((slab, index) => ({ slab, index }))
+    .sort((left, right) => {
+      const primary = compareValues(
+        getSortValue(left.slab, state.sortKey),
+        getSortValue(right.slab, state.sortKey),
+      );
+      const direction = state.sortDirection === "asc" ? 1 : -1;
+      return primary ? primary * direction : left.index - right.index;
+    })
+    .map((entry) => entry.slab);
+}
+
+function renderSortState() {
+  elements.sortButtons.forEach((button) => {
+    const isActive = button.dataset.sortKey === state.sortKey;
+    const th = button.closest("th");
+    button.dataset.sortDirection = isActive ? state.sortDirection : "";
+    button.setAttribute(
+      "aria-label",
+      `${button.textContent.trim()}: ${isActive ? `sorted ${state.sortDirection}` : "not sorted"}`,
+    );
+    th?.setAttribute(
+      "aria-sort",
+      isActive ? (state.sortDirection === "asc" ? "ascending" : "descending") : "none",
+    );
   });
 }
 
@@ -430,7 +508,8 @@ function renderStaticSections() {
 }
 
 function render() {
-  renderTable(getFilteredSlabs());
+  renderSortState();
+  renderTable(getSortedSlabs(getFilteredSlabs()));
 }
 
 async function loadSlabs() {
@@ -458,6 +537,19 @@ elements.searchInput.addEventListener("input", (event) => {
 elements.statusFilter.addEventListener("change", (event) => {
   state.status = event.target.value;
   render();
+});
+
+elements.sortButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const nextKey = button.dataset.sortKey;
+    if (state.sortKey === nextKey) {
+      state.sortDirection = state.sortDirection === "asc" ? "desc" : "asc";
+    } else {
+      state.sortKey = nextKey;
+      state.sortDirection = "asc";
+    }
+    render();
+  });
 });
 
 loadSlabs();
