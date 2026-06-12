@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>The Provenance Atlas | PTCG Slabs Tracker</title>
-    <link rel="stylesheet" href="styles.css?v=20260612-provenance-atlas">
+    <link rel="stylesheet" href="styles.css?v=20260612-slab-list">
   </head>
   <body>
     <header class="site-header" aria-label="The Provenance Atlas header">
@@ -247,7 +247,26 @@
               <option value="In transit">In transit</option>
             </select>
           </label>
+          <label>
+            <span>Sort</span>
+            <select id="sortFilter">
+              <option value="">Invoice order</option>
+              <option value="marketSGD:desc">Value high to low</option>
+              <option value="marketSGD:asc">Value low to high</option>
+              <option value="paidSGD:desc">Cost high to low</option>
+              <option value="purchaseDate:desc">Newest purchase</option>
+              <option value="purchaseDate:asc">Oldest purchase</option>
+              <option value="card:asc">Card A-Z</option>
+              <option value="status:asc">Status</option>
+            </select>
+          </label>
         </div>
+
+        <section class="slab-list-shell" aria-label="Visual slab list">
+          <div class="slab-list" id="slabCards">
+            <article class="slab-list-empty">Loading slabs...</article>
+          </div>
+        </section>
 
         <section class="table-shell" aria-label="Slabs table">
           <table>
@@ -281,6 +300,6 @@
       <span>Vault archive no. GZ-2026-PTCG</span>
     </footer>
 
-    <script src="app.js?v=20260612-sortable"></script>
+    <script src="app.js?v=20260612-card-list"></script>
   </body>
 </html>
