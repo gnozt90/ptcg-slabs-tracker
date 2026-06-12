@@ -108,7 +108,6 @@ function formatCert(slab) {
 
 function formatSlabImage(slab, size = "table") {
   const frontUrl = slab.slabImageUrl;
-  const backUrl = slab.slabImageBackUrl;
 
   if (!frontUrl) {
     return `<span class="catalog-placeholder ${size === "large" ? "large" : ""}" aria-hidden="true">
@@ -118,15 +117,12 @@ function formatSlabImage(slab, size = "table") {
   }
 
   const imageAlt = `Slab image for ${slab.card}`;
-  const previewImages = [frontUrl, backUrl]
-    .filter(Boolean)
-    .map((url) => `<img src="${escapeHtml(url)}" alt="${escapeHtml(imageAlt)}" loading="lazy">`)
-    .join("");
+  const previewImage = `<img src="${escapeHtml(frontUrl)}" alt="${escapeHtml(imageAlt)}" loading="lazy">`;
 
   return `
     <a class="slab-image-link ${size === "large" ? "large" : ""}" href="${escapeHtml(frontUrl)}" target="_blank" rel="noreferrer" aria-label="${escapeHtml(imageAlt)}">
       <img class="slab-thumb" src="${escapeHtml(frontUrl)}" alt="${escapeHtml(imageAlt)}" loading="lazy">
-      <span class="slab-preview" aria-hidden="true">${previewImages}</span>
+      <span class="slab-preview" aria-hidden="true">${previewImage}</span>
     </a>
   `;
 }
