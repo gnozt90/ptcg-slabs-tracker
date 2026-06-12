@@ -32,6 +32,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-SG", {
 
 const elements = {
   body: document.querySelector("#slabsBody"),
+  slabCards: document.querySelector("#slabCards"),
   totalPaid: document.querySelector("#totalPaid"),
   totalMarket: document.querySelector("#totalMarket"),
   totalGain: document.querySelector("#totalGain"),
@@ -44,6 +45,7 @@ const elements = {
   analyticsDate: document.querySelector("#analyticsDate"),
   searchInput: document.querySelector("#searchInput"),
   statusFilter: document.querySelector("#statusFilter"),
+  sortFilter: document.querySelector("#sortFilter"),
   sortButtons: document.querySelectorAll("[data-sort-key]"),
   featuredGrails: document.querySelector("#featuredGrails"),
   gradingBreakdown: document.querySelector("#gradingBreakdown"),
@@ -131,6 +133,37 @@ function formatSlabImage(slab, size = "table") {
     <a class="slab-image-link ${size === "large" ? "large" : ""}" href="${escapeHtml(frontUrl)}" target="_blank" rel="noreferrer" aria-label="${escapeHtml(imageAlt)}">
       <img class="slab-thumb" src="${escapeHtml(frontUrl)}" alt="${escapeHtml(imageAlt)}" loading="lazy">
       <span class="slab-preview" aria-hidden="true">${previewImage}</span>
+    </a>
+  `;
+}
+
+function getItemNumber(slab) {
+  const match = String(slab.card || "").match(/#([A-Za-z0-9/-]+)\s*$/);
+  return match ? `#${match[1]}` : "";
+}
+
+function getDisplayTitle(slab) {
+  return String(slab.card || "")
+    .replace(/^\d{4}\s+Pokemon\s+/i, "")
+    .replace(/^Japanese\s+/i, "")
+    .replace(/\s+#([A-Za-z0-9/-]+)\s*$/, "")
+    .replace(/\s+(SM|SV|S|XY)\d+[A-Za-z]?\s*$/i, "")
+    .trim();
+}
+
+function getSourceLabel(slab) {
+  if (slab.invoiceId || /cardova/i.test(slab.marketSourceUrl || "")) return "cardova";
+  if (/psacard/i.test(slab.marketSourceUrl || "")) return "PSA Estimate";
+  if (/acegrading/i.test(slab.marketSourceUrl || "")) return "ACE cert";
+  return slab.marketSourceName || "documented";
+}
+
+function getCardImageMarkup(slab) {
+  if (!slab.slabImageUrl) return formatSlabImage(slab);
+
+  return `
+    <a class="slab-card-image-link" href="${escapeHtml(slab.slabImageUrl)}" target="_blank" rel="noreferrer" aria-label="Open slab image for ${escapeHtml(slab.card)}">
+      <img src="${escapeHtml(slab.slabImageUrl)}" alt="Slab image for ${escapeHtml(slab.card)}" loading="lazy">
     </a>
   `;
 }
@@ -233,6 +266,10 @@ function getSortedSlabs(slabs) {
 }
 
 function renderSortState() {
+  if (elements.sortFilter) {
+    elements.sortFilter.value = state.sortKey ? `${state.sortKey}:${state.sortDirection}` : "";
+  }
+
   elements.sortButtons.forEach((button) => {
     const isActive = button.dataset.sortKey === state.sortKey;
     const th = button.closest("th");
@@ -497,6 +534,54 @@ function renderTable(slabs) {
     .join("");
 }
 
+function renderSlabCards(slabs) {
+  if (!slabs.length) {
+    elements.slabCards.innerHTML = '<article class="slab-list-empty">No slabs match the current filters.</article>';
+    return;
+  }
+
+  elements.slabCards.innerHTML = slabs
+    .map((slab) => {
+      const gain = slab.marketSGD - slab.paidSGD;
+      const gainPercent = slab.paidSGD ? (gain / slab.paidSGD) * 100 : 0;
+      const statusClass = slab.status.toLowerCase().replaceAll(" ", "-");
+      const itemNumber = getItemNumber(slab);
+      const language = getLanguage(slab).replace(" / other", "");
+      const sourceLabel = getSourceLabel(slab);
+
+      return `
+        <article class="slab-list-card">
+          <div class="slab-list-media">${getCardImageMarkup(slab)}</div>
+          <div class="slab-list-main">
+            <div class="slab-list-title">
+              <h3>${escapeHtml(getDisplayTitle(slab))}${itemNumber ? ` <span>${escapeHtml(itemNumber)}</span>` : ""}</h3>
+              <p class="slab-list-set"><span aria-hidden="true">◎</span>${escapeHtml(`Pokemon ${language} ${slab.set || "Unknown set"}`)}</p>
+              <p class="slab-list-source"><span aria-hidden="true">▢</span>${escapeHtml(sourceLabel)}</p>
+            </div>
+            <div class="slab-list-meta">
+              <strong>${escapeHtml(slab.grade)}</strong>
+              <span>Cert ${formatCert(slab)}</span>
+              <span class="status ${statusClass}">${escapeHtml(slab.status)}</span>
+            </div>
+          </div>
+          <dl class="slab-list-values">
+            <div>
+              <dt>Value</dt>
+              <dd>${formatCurrency(slab.marketSGD)}</dd>
+              <small>${formatGain(gain)} · ${formatPercent(gainPercent)}</small>
+            </div>
+            <div>
+              <dt>Cost</dt>
+              <dd>${formatCurrency(slab.paidSGD)}</dd>
+              <small>${escapeHtml(formatDate(slab.purchaseDate))}</small>
+            </div>
+          </dl>
+        </article>
+      `;
+    })
+    .join("");
+}
+
 function renderStaticSections() {
   const slabs = state.slabs;
   renderFeaturedGrails(slabs);
@@ -508,8 +593,10 @@ function renderStaticSections() {
 }
 
 function render() {
+  const slabs = getSortedSlabs(getFilteredSlabs());
   renderSortState();
-  renderTable(getSortedSlabs(getFilteredSlabs()));
+  renderSlabCards(slabs);
+  renderTable(slabs);
 }
 
 async function loadSlabs() {
@@ -525,6 +612,7 @@ async function loadSlabs() {
     render();
   } catch (error) {
     elements.lastUpdated.textContent = "Data failed to load";
+    elements.slabCards.innerHTML = `<article class="slab-list-empty">${escapeHtml(error.message)}</article>`;
     elements.body.innerHTML = `<tr><td colspan="10" class="empty">${escapeHtml(error.message)}</td></tr>`;
   }
 }
@@ -536,6 +624,13 @@ elements.searchInput.addEventListener("input", (event) => {
 
 elements.statusFilter.addEventListener("change", (event) => {
   state.status = event.target.value;
+  render();
+});
+
+elements.sortFilter.addEventListener("change", (event) => {
+  const [sortKey, sortDirection] = event.target.value.split(":");
+  state.sortKey = sortKey || "";
+  state.sortDirection = sortDirection || "asc";
   render();
 });
 
