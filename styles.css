@@ -910,6 +910,54 @@ th {
   white-space: nowrap;
 }
 
+th.numeric .sort-button {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.sort-button {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  text-transform: inherit;
+}
+
+.sort-button::after {
+  content: "";
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  opacity: 0.34;
+}
+
+.sort-button[data-sort-direction="asc"]::after {
+  border-bottom: 6px solid var(--oxblood);
+  opacity: 1;
+}
+
+.sort-button[data-sort-direction="desc"]::after {
+  border-top: 6px solid var(--oxblood);
+  opacity: 1;
+}
+
+.sort-button:hover {
+  color: var(--oxblood);
+}
+
+.sort-button:focus-visible {
+  outline: 2px solid var(--oxblood);
+  outline-offset: 3px;
+}
+
 tbody tr {
   transition: background 180ms ease;
 }
