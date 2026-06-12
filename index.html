@@ -253,16 +253,16 @@
           <table>
             <thead>
               <tr>
-                <th>Purchase Date</th>
-                <th>Slab</th>
-                <th>Card</th>
-                <th>Cert</th>
-                <th>Grade</th>
-                <th class="numeric">Paid SGD</th>
-                <th class="numeric">Market SGD</th>
-                <th class="numeric">Gain/Loss SGD</th>
-                <th class="numeric">Gain/Loss %</th>
-                <th>Delivered/Vaulted</th>
+                <th aria-sort="none"><button class="sort-button" type="button" data-sort-key="purchaseDate">Purchase Date</button></th>
+                <th aria-sort="none"><button class="sort-button" type="button" data-sort-key="slabImage">Slab</button></th>
+                <th aria-sort="none"><button class="sort-button" type="button" data-sort-key="card">Card</button></th>
+                <th aria-sort="none"><button class="sort-button" type="button" data-sort-key="cert">Cert</button></th>
+                <th aria-sort="none"><button class="sort-button" type="button" data-sort-key="grade">Grade</button></th>
+                <th class="numeric" aria-sort="none"><button class="sort-button" type="button" data-sort-key="paidSGD">Paid SGD</button></th>
+                <th class="numeric" aria-sort="none"><button class="sort-button" type="button" data-sort-key="marketSGD">Market SGD</button></th>
+                <th class="numeric" aria-sort="none"><button class="sort-button" type="button" data-sort-key="gainSGD">Gain/Loss SGD</button></th>
+                <th class="numeric" aria-sort="none"><button class="sort-button" type="button" data-sort-key="gainPercent">Gain/Loss %</button></th>
+                <th aria-sort="none"><button class="sort-button" type="button" data-sort-key="status">Delivered/Vaulted</button></th>
               </tr>
             </thead>
             <tbody id="slabsBody">
@@ -281,6 +281,6 @@
       <span>Vault archive no. GZ-2026-PTCG</span>
     </footer>
 
-    <script src="app.js?v=20260612-provenance-atlas"></script>
+    <script src="app.js?v=20260612-sortable"></script>
   </body>
 </html>
