@@ -2065,6 +2065,10 @@ tbody tr:hover {
   display: none;
 }
 
+.material-vault .slab-list-shell {
+  display: none;
+}
+
 @media (max-width: 1180px) {
   .material-vault .table-shell {
     margin-right: 0;
@@ -2146,6 +2150,7 @@ tbody tr:hover {
   }
 
   .material-vault .slab-list-shell {
+    display: block;
     padding: 0 12px 16px;
   }
 
