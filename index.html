@@ -4,9 +4,16 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>The Provenance Atlas | PTCG Slabs Tracker</title>
-    <link rel="stylesheet" href="styles.css?v=20260612-mobile-list-only">
+    <link rel="stylesheet" href="styles.css?v=20260613-material-vault">
   </head>
-  <body>
+  <body class="material-vault">
+    <aside class="app-rail" aria-label="Vault sections">
+      <a href="#top" aria-label="Portfolio overview">V</a>
+      <a href="#grails" aria-label="Featured grails">G</a>
+      <a href="#analytics" aria-label="Analytics">A</a>
+      <a href="#registry" aria-label="Registry">R</a>
+    </aside>
+
     <header class="site-header" aria-label="The Provenance Atlas header">
       <a class="brand-mark" href="#top" aria-label="The Provenance Atlas home">
         <span class="brand-seal">G</span>
@@ -292,7 +299,22 @@
           </table>
         </section>
       </section>
+
+      <aside class="slab-detail-drawer" id="slabDetailDrawer" aria-label="Selected slab details" aria-live="polite">
+        <button class="detail-close" id="detailClose" type="button" aria-label="Close slab details">Close</button>
+        <div id="slabDetailContent" class="slab-detail-content">
+          <p class="eyebrow">Selected slab</p>
+          <p class="panel-copy">Select a slab from the registry to inspect certification, value, and provenance.</p>
+        </div>
+      </aside>
     </main>
+
+    <nav class="mobile-bottom-nav" aria-label="Mobile collection navigation">
+      <a href="#top">Vault</a>
+      <a href="#analytics">Analytics</a>
+      <a href="#registry">Search</a>
+      <a href="#grails">Grails</a>
+    </nav>
 
     <footer class="site-footer">
       <span>The Provenance Atlas</span>
