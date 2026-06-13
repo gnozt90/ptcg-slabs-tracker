@@ -2,11 +2,8 @@ const state = {
   slabs: [],
   query: "",
   status: "all",
-  grader: "all",
-  set: "all",
-  sortKey: "purchaseDate",
-  sortDirection: "desc",
-  selectedCert: "",
+  sortKey: "",
+  sortDirection: "asc",
 };
 
 const currencyFormatter = new Intl.NumberFormat("en-SG", {
@@ -40,35 +37,54 @@ const elements = {
   totalMarket: document.querySelector("#totalMarket"),
   totalGain: document.querySelector("#totalGain"),
   totalGainPercent: document.querySelector("#totalGainPercent"),
-  gainSubtitle: document.querySelector("#gainSubtitle"),
-  vaultedMetric: document.querySelector("#vaultedMetric"),
-  vaultedSubtitle: document.querySelector("#vaultedSubtitle"),
-  valueSparkline: document.querySelector("#valueSparkline"),
-  gainSparkline: document.querySelector("#gainSparkline"),
-  railCount: document.querySelector("#railCount"),
-  railValue: document.querySelector("#railValue"),
-  railCost: document.querySelector("#railCost"),
-  railGain: document.querySelector("#railGain"),
-  railVaulted: document.querySelector("#railVaulted"),
+  heroMarket: document.querySelector("#heroMarket"),
+  heroCount: document.querySelector("#heroCount"),
+  heroVaulted: document.querySelector("#heroVaulted"),
+  statusPills: document.querySelector("#statusPills"),
+  lastUpdated: document.querySelector("#lastUpdated"),
+  analyticsDate: document.querySelector("#analyticsDate"),
   searchInput: document.querySelector("#searchInput"),
   statusFilter: document.querySelector("#statusFilter"),
-  graderFilter: document.querySelector("#graderFilter"),
-  setFilter: document.querySelector("#setFilter"),
   sortFilter: document.querySelector("#sortFilter"),
   sortButtons: document.querySelectorAll("[data-sort-key]"),
-  graderChips: document.querySelectorAll("[data-grader-chip]"),
-  clearFilters: document.querySelector("#clearFilters"),
-  activeFilterCount: document.querySelector("#activeFilterCount"),
-  detailDrawer: document.querySelector("#detailDrawer"),
-  drawerClose: document.querySelector("#drawerClose"),
-  detailContent: document.querySelector("#detailContent"),
-  resultCount: document.querySelector("#resultCount"),
+  featuredGrails: document.querySelector("#featuredGrails"),
+  gradingBreakdown: document.querySelector("#gradingBreakdown"),
+  eraBreakdown: document.querySelector("#eraBreakdown"),
+  languageBreakdown: document.querySelector("#languageBreakdown"),
+  portfolioHealth: document.querySelector("#portfolioHealth"),
+  healthBadge: document.querySelector("#healthBadge"),
+  trendLine: document.querySelector("#trendLine"),
+  gradeDistribution: document.querySelector("#gradeDistribution"),
+  diversificationScore: document.querySelector("#diversificationScore"),
+  diversificationText: document.querySelector("#diversificationText"),
+  provenanceCards: document.querySelector("#provenanceCards"),
+  recentAcquisitions: document.querySelector("#recentAcquisitions"),
+  collectionTimeline: document.querySelector("#collectionTimeline"),
+  milestones: document.querySelector("#milestones"),
+  rarityStats: document.querySelector("#rarityStats"),
+  topPerformers: document.querySelector("#topPerformers"),
 };
 
 const collator = new Intl.Collator("en", {
   sensitivity: "base",
   numeric: true,
 });
+
+function formatCurrency(value, compact = false) {
+  if (typeof value !== "number") return "-";
+  return compact ? compactCurrencyFormatter.format(value) : currencyFormatter.format(value);
+}
+
+function formatGain(value) {
+  const className = value >= 0 ? "gain" : "loss";
+  return `<span class="${className}">${formatCurrency(value)}</span>`;
+}
+
+function formatPercent(value) {
+  if (!Number.isFinite(value)) return "-";
+  const className = value >= 0 ? "gain" : "loss";
+  return `<span class="${className}">${percentFormatter.format(value)}%</span>`;
+}
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -79,38 +95,25 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function formatCurrency(value, compact = false) {
-  if (typeof value !== "number") return "-";
-  return compact ? compactCurrencyFormatter.format(value) : currencyFormatter.format(value);
-}
-
 function formatDate(value) {
   const date = new Date(`${value}T00:00:00`);
-  if (Number.isNaN(date.getTime())) return value || "-";
+  if (Number.isNaN(date.getTime())) return value;
   return dateFormatter.format(date);
 }
 
-function getGain(slab) {
-  const gain = slab.marketSGD - slab.paidSGD;
-  const gainPercent = slab.paidSGD ? (gain / slab.paidSGD) * 100 : 0;
-  return { gain, gainPercent };
-}
+function formatCert(slab) {
+  const cert = escapeHtml(slab.cert);
+  const grade = String(slab.grade ?? "").toUpperCase();
 
-function gainClass(value) {
-  return value >= 0 ? "gain" : "loss";
-}
+  if (grade.startsWith("PSA")) {
+    return `<a class="cert-link" href="https://www.psacard.com/cert/${cert}/psa" target="_blank" rel="noreferrer">${cert}</a>`;
+  }
 
-function formatGain(value) {
-  return `<span class="${gainClass(value)}">${value >= 0 ? "+" : ""}${formatCurrency(value)}</span>`;
-}
+  if (grade.startsWith("ACE")) {
+    return `<a class="cert-link" href="https://acegrading.com/cert" target="_blank" rel="noreferrer" title="Open ACE certification lookup">${cert}</a>`;
+  }
 
-function formatPercent(value) {
-  if (!Number.isFinite(value)) return "-";
-  return `<span class="${gainClass(value)}">${value >= 0 ? "+" : ""}${percentFormatter.format(value)}%</span>`;
-}
-
-function getCompany(grade) {
-  return String(grade || "Unknown").split(" ")[0].toUpperCase();
+  return cert;
 }
 
 function getCertUrl(slab) {
@@ -118,18 +121,33 @@ function getCertUrl(slab) {
   const grade = String(slab.grade ?? "").toUpperCase();
   if (grade.startsWith("PSA")) return `https://www.psacard.com/cert/${cert}/psa`;
   if (grade.startsWith("ACE")) return "https://acegrading.com/cert";
-  return slab.marketSourceUrl || "";
+  return "";
 }
 
-function formatCert(slab) {
-  const cert = escapeHtml(slab.cert);
-  const url = getCertUrl(slab);
-  return url ? `<a class="cert-link" href="${escapeHtml(url)}" target="_blank" rel="noreferrer">${cert}</a>` : cert;
+function formatSlabImage(slab, size = "table") {
+  const frontUrl = slab.slabImageUrl;
+
+  if (!frontUrl) {
+    return `<span class="catalog-placeholder ${size === "large" ? "large" : ""}" aria-hidden="true">
+      <span>${escapeHtml(getCompany(slab.grade))}</span>
+      <strong>${escapeHtml(String(slab.grade).replace(" ", ""))}</strong>
+    </span>`;
+  }
+
+  const imageAlt = `Slab image for ${slab.card}`;
+  const previewImage = `<img src="${escapeHtml(frontUrl)}" alt="${escapeHtml(imageAlt)}" loading="lazy">`;
+
+  return `
+    <a class="slab-image-link ${size === "large" ? "large" : ""}" href="${escapeHtml(frontUrl)}" target="_blank" rel="noreferrer" aria-label="${escapeHtml(imageAlt)}">
+      <img class="slab-thumb" src="${escapeHtml(frontUrl)}" alt="${escapeHtml(imageAlt)}" loading="lazy">
+      <span class="slab-preview" aria-hidden="true">${previewImage}</span>
+    </a>
+  `;
 }
 
 function getItemNumber(slab) {
   const match = String(slab.card || "").match(/#([A-Za-z0-9/-]+)\s*$/);
-  return match ? match[1] : "";
+  return match ? `#${match[1]}` : "";
 }
 
 function getDisplayTitle(slab) {
@@ -141,33 +159,81 @@ function getDisplayTitle(slab) {
     .trim();
 }
 
-function getGradeClass(grade) {
-  const company = getCompany(grade).toLowerCase();
-  return `grade-badge ${company}`;
+function getSourceLabel(slab) {
+  if (slab.invoiceId || /cardova/i.test(slab.marketSourceUrl || "")) return "cardova";
+  if (/psacard/i.test(slab.marketSourceUrl || "")) return "PSA Estimate";
+  if (/acegrading/i.test(slab.marketSourceUrl || "")) return "ACE cert";
+  return slab.marketSourceName || "documented";
 }
 
-function imageMarkup(slab, mode = "thumb") {
-  if (!slab.slabImageUrl) {
-    return `<span class="slab-placeholder ${mode}">
-      <b>${escapeHtml(getCompany(slab.grade))}</b>
-      <span>${escapeHtml(String(slab.grade).replace(" ", ""))}</span>
-    </span>`;
-  }
+function getCardImageMarkup(slab) {
+  if (!slab.slabImageUrl) return formatSlabImage(slab);
 
-  return `<a class="slab-image ${mode}" href="${escapeHtml(slab.slabImageUrl)}" target="_blank" rel="noreferrer">
-    <img src="${escapeHtml(slab.slabImageUrl)}" alt="${escapeHtml(`Slab image for ${slab.card}`)}" loading="lazy">
-  </a>`;
+  return `
+    <a class="slab-card-image-link" href="${escapeHtml(slab.slabImageUrl)}" target="_blank" rel="noreferrer" aria-label="Open slab image for ${escapeHtml(slab.card)}">
+      <img src="${escapeHtml(slab.slabImageUrl)}" alt="Slab image for ${escapeHtml(slab.card)}" loading="lazy">
+    </a>
+  `;
 }
 
-function getStatusClass(status) {
-  return String(status || "").toLowerCase().replaceAll(" ", "-");
+function getSlabGain(slab) {
+  const gain = slab.marketSGD - slab.paidSGD;
+  const gainPercent = slab.paidSGD ? (gain / slab.paidSGD) * 100 : 0;
+  return { gain, gainPercent };
+}
+
+function getCompany(grade) {
+  return String(grade || "Unknown").split(" ")[0].toUpperCase();
+}
+
+function getCardYear(card) {
+  const match = String(card).match(/\b(19|20)\d{2}\b/);
+  return match ? Number(match[0]) : null;
+}
+
+function getEra(slab) {
+  const year = getCardYear(slab.card);
+  if (!year) return "Unknown";
+  if (year <= 2016) return "XY & earlier";
+  if (year <= 2019) return "Sun & Moon";
+  if (year <= 2022) return "Sword & Shield";
+  return "Scarlet & Violet";
+}
+
+function getLanguage(slab) {
+  return /japanese/i.test(slab.card) ? "Japanese" : "English / other";
+}
+
+function getFilteredSlabs() {
+  const query = state.query.trim().toLowerCase();
+
+  return state.slabs.filter((slab) => {
+    const statusMatches = state.status === "all" || slab.status === state.status;
+    const searchable = [
+      slab.card,
+      slab.cert,
+      slab.grade,
+      slab.set,
+      slab.status,
+      slab.marketSourceName,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    return statusMatches && (!query || searchable.includes(query));
+  });
 }
 
 function getSortValue(slab, key) {
-  const { gain, gainPercent } = getGain(slab);
+  const gain = slab.marketSGD - slab.paidSGD;
+  const gainPercent = slab.paidSGD ? (gain / slab.paidSGD) * 100 : 0;
+
   switch (key) {
     case "purchaseDate":
       return slab.purchaseDate || "";
+    case "slabImage":
+      return slab.slabImageUrl ? 1 : 0;
     case "card":
       return `${slab.card || ""} ${slab.set || ""}`;
     case "cert":
@@ -190,178 +256,339 @@ function getSortValue(slab, key) {
 }
 
 function compareValues(a, b) {
-  if (typeof a === "number" && typeof b === "number") return a - b;
-  return collator.compare(String(a ?? ""), String(b ?? ""));
-}
+  if (typeof a === "number" && typeof b === "number") {
+    return a - b;
+  }
 
-function getFilteredSlabs() {
-  const query = state.query.trim().toLowerCase();
-  return state.slabs.filter((slab) => {
-    const searchable = [slab.card, slab.cert, slab.grade, slab.set, slab.status, slab.marketSourceName]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
-    return (
-      (state.status === "all" || slab.status === state.status) &&
-      (state.grader === "all" || getCompany(slab.grade) === state.grader) &&
-      (state.set === "all" || slab.set === state.set) &&
-      (!query || searchable.includes(query))
-    );
-  });
+  return collator.compare(String(a ?? ""), String(b ?? ""));
 }
 
 function getSortedSlabs(slabs) {
   if (!state.sortKey) return slabs;
+
   return slabs
     .map((slab, index) => ({ slab, index }))
     .sort((left, right) => {
-      const primary = compareValues(getSortValue(left.slab, state.sortKey), getSortValue(right.slab, state.sortKey));
+      const primary = compareValues(
+        getSortValue(left.slab, state.sortKey),
+        getSortValue(right.slab, state.sortKey),
+      );
       const direction = state.sortDirection === "asc" ? 1 : -1;
       return primary ? primary * direction : left.index - right.index;
     })
     .map((entry) => entry.slab);
 }
 
+function renderSortState() {
+  if (elements.sortFilter) {
+    elements.sortFilter.value = state.sortKey ? `${state.sortKey}:${state.sortDirection}` : "";
+  }
+
+  elements.sortButtons.forEach((button) => {
+    const isActive = button.dataset.sortKey === state.sortKey;
+    const th = button.closest("th");
+    button.dataset.sortDirection = isActive ? state.sortDirection : "";
+    button.setAttribute(
+      "aria-label",
+      `${button.textContent.trim()}: ${isActive ? `sorted ${state.sortDirection}` : "not sorted"}`,
+    );
+    th?.setAttribute(
+      "aria-sort",
+      isActive ? (state.sortDirection === "asc" ? "ascending" : "descending") : "none",
+    );
+  });
+}
+
+function countBy(slabs, getKey) {
+  return slabs.reduce((counts, slab) => {
+    const key = getKey(slab);
+    counts[key] = (counts[key] || 0) + 1;
+    return counts;
+  }, {});
+}
+
 function topByMarket(slabs, count) {
   return [...slabs].sort((a, b) => b.marketSGD - a.marketSGD).slice(0, count);
 }
 
-function renderSparkline(target, values, tone = "yellow") {
-  const max = Math.max(...values, 1);
-  target.innerHTML = values
-    .map((value, index) => `<span class="${tone}" style="height:${Math.max(14, (value / max) * 100)}%" title="Point ${index + 1}"></span>`)
+function renderBreakdown(target, entries, total) {
+  target.innerHTML = entries
+    .map(([label, count]) => {
+      const pct = total ? (count / total) * 100 : 0;
+      return `
+        <div class="breakdown-row">
+          <div><span>${escapeHtml(label)}</span><strong>${count} (${Math.round(pct)}%)</strong></div>
+          <span class="bar"><i style="width: ${pct}%"></i></span>
+        </div>
+      `;
+    })
     .join("");
 }
 
-function getTimelineValues(slabs, key = "marketSGD") {
-  const byDate = [...slabs]
-    .sort((a, b) => String(a.purchaseDate).localeCompare(String(b.purchaseDate)))
-    .reduce((points, slab) => {
-      const last = points.at(-1);
-      const value = (last?.value || 0) + (key === "gain" ? getGain(slab).gain : slab[key]);
-      if (last && last.date === slab.purchaseDate) last.value = value;
-      else points.push({ date: slab.purchaseDate, value: Math.max(0, value) });
-      return points;
-    }, []);
-  return byDate.slice(-16).map((point) => point.value);
+function renderFeaturedGrails(slabs) {
+  const grails = topByMarket(slabs, 7);
+
+  elements.featuredGrails.innerHTML = grails
+    .map((slab, index) => `
+      <article class="grail-card">
+        <span class="lot-number">${String(index + 1).padStart(2, "0")}</span>
+        <div class="grail-image">${formatSlabImage(slab, "large")}</div>
+        <div class="grail-copy">
+          <p>${escapeHtml(slab.grade)} · ${escapeHtml(slab.set)}</p>
+          <h3>${escapeHtml(slab.card)}</h3>
+          <dl>
+            <div><dt>Market</dt><dd>${formatCurrency(slab.marketSGD, slab.marketSGD > 999)}</dd></div>
+            <div><dt>Custody</dt><dd>${escapeHtml(slab.status)}</dd></div>
+          </dl>
+        </div>
+      </article>
+    `)
+    .join("");
 }
 
-function renderMetricCards(slabs) {
+function renderOverview(slabs) {
+  const total = slabs.length;
+  const grading = Object.entries(countBy(slabs, (slab) => getCompany(slab.grade))).sort((a, b) => b[1] - a[1]);
+  const eras = Object.entries(countBy(slabs, getEra)).sort((a, b) => b[1] - a[1]);
+  const languages = Object.entries(countBy(slabs, getLanguage)).sort((a, b) => b[1] - a[1]);
+
+  renderBreakdown(elements.gradingBreakdown, grading, total);
+  renderBreakdown(elements.eraBreakdown, eras, total);
+  renderBreakdown(elements.languageBreakdown, languages, total);
+
+  const psa10 = slabs.filter((slab) => slab.grade.toUpperCase() === "PSA 10").length;
+  const gradeQuality = total ? Math.round((psa10 / total) * 100) : 0;
+  elements.healthBadge.textContent = gradeQuality >= 75 ? "A+" : "A";
+  elements.portfolioHealth.textContent = `${gradeQuality}% PSA 10 concentration with ${grading.length} grading companies represented. Strong grail focus with room for more market-sourced price updates.`;
+}
+
+function renderAnalytics(slabs) {
   const totalPaid = slabs.reduce((sum, slab) => sum + slab.paidSGD, 0);
   const totalMarket = slabs.reduce((sum, slab) => sum + slab.marketSGD, 0);
   const totalGain = totalMarket - totalPaid;
   const gainPercent = totalPaid ? (totalGain / totalPaid) * 100 : 0;
   const vaulted = slabs.filter((slab) => slab.status === "Vaulted").length;
-  const vaultedPercent = slabs.length ? (vaulted / slabs.length) * 100 : 0;
+  const statusCounts = countBy(slabs, (slab) => slab.status);
+  const sourceUpdated = slabs.filter((slab) => slab.marketSourceName === "PSA Estimate").length;
 
-  elements.totalMarket.textContent = formatCurrency(totalMarket);
+  elements.heroMarket.textContent = formatCurrency(totalMarket);
+  elements.heroCount.textContent = String(slabs.length);
+  elements.heroVaulted.textContent = String(vaulted);
   elements.totalPaid.textContent = formatCurrency(totalPaid);
+  elements.totalMarket.textContent = formatCurrency(totalMarket);
   elements.totalGain.innerHTML = formatGain(totalGain);
-  elements.totalGainPercent.innerHTML = `${formatPercent(gainPercent)} All time`;
-  elements.gainSubtitle.innerHTML = `${formatPercent(gainPercent)} All time`;
-  elements.vaultedMetric.textContent = String(vaulted);
-  elements.vaultedSubtitle.textContent = `${percentFormatter.format(vaultedPercent)}% of collection`;
+  elements.totalGainPercent.innerHTML = formatPercent(gainPercent);
+  elements.statusPills.innerHTML = Object.entries(statusCounts)
+    .map(([status, count]) => {
+      const statusClass = status.toLowerCase().replaceAll(" ", "-");
+      return `<span class="status-pill ${statusClass}"><strong>${count}</strong> ${escapeHtml(status)}</span>`;
+    })
+    .join("");
 
-  elements.railCount.textContent = String(slabs.length);
-  elements.railValue.textContent = formatCurrency(totalMarket, true);
-  elements.railCost.textContent = formatCurrency(totalPaid, true);
-  elements.railGain.innerHTML = formatGain(totalGain);
-  elements.railVaulted.textContent = `${vaulted} (${percentFormatter.format(vaultedPercent)}%)`;
+  const byDate = [...slabs]
+    .sort((a, b) => a.purchaseDate.localeCompare(b.purchaseDate))
+    .reduce((points, slab) => {
+      const last = points.at(-1);
+      const value = (last?.value || 0) + slab.marketSGD;
+      if (last && last.date === slab.purchaseDate) last.value = value;
+      else points.push({ date: slab.purchaseDate, value });
+      return points;
+    }, []);
+  const max = Math.max(...byDate.map((point) => point.value), 1);
+  elements.trendLine.innerHTML = byDate
+    .map((point) => `<span style="height: ${(point.value / max) * 100}%" title="${escapeHtml(formatDate(point.date))}: ${escapeHtml(formatCurrency(point.value))}"></span>`)
+    .join("");
 
-  renderSparkline(elements.valueSparkline, getTimelineValues(slabs, "marketSGD"), "yellow");
-  renderSparkline(elements.gainSparkline, getTimelineValues(slabs, "gain"), "green");
+  const gradeEntries = Object.entries(countBy(slabs, (slab) => slab.grade)).sort((a, b) => b[1] - a[1]);
+  renderBreakdown(elements.gradeDistribution, gradeEntries, slabs.length);
+
+  const eras = Object.keys(countBy(slabs, getEra)).length;
+  const grades = Object.keys(countBy(slabs, (slab) => slab.grade)).length;
+  const diversification = Math.min(99, Math.round(62 + eras * 6 + grades * 3));
+  elements.diversificationScore.textContent = String(diversification);
+  elements.diversificationText.textContent = `${eras} eras and ${grades} grade buckets represented. ${sourceUpdated} slab currently has external PSA Estimate pricing.`;
 }
 
-function renderSetOptions(slabs) {
-  const sets = [...new Set(slabs.map((slab) => slab.set).filter(Boolean))].sort(collator.compare);
-  elements.setFilter.innerHTML = `<option value="all">All</option>${sets
-    .map((set) => `<option value="${escapeHtml(set)}">${escapeHtml(set)}</option>`)
-    .join("")}`;
+function renderProvenance(slabs) {
+  const stories = [
+    "A high-conviction grail entry anchoring the modern showcase tier.",
+    "A collector-favorite Japanese chase piece with strong display presence.",
+    "A premium acquisition kept visible for future market source upgrades.",
+  ];
+
+  elements.provenanceCards.innerHTML = topByMarket(slabs, 3)
+    .map((slab, index) => `
+      <article class="provenance-card">
+        <span class="lot-number">${String(index + 1).padStart(2, "0")}</span>
+        <div class="provenance-image">${formatSlabImage(slab, "large")}</div>
+        <div>
+          <p>${escapeHtml(slab.grade)} · ${escapeHtml(slab.set)}</p>
+          <h3>${escapeHtml(slab.card)}</h3>
+          <h4>Acquisition story</h4>
+          <p>${stories[index]}</p>
+          <dl>
+            <div><dt>Acquired</dt><dd>${escapeHtml(formatDate(slab.purchaseDate))}</dd></div>
+            <div><dt>Cost</dt><dd>${formatCurrency(slab.paidSGD)}</dd></div>
+          </dl>
+        </div>
+      </article>
+    `)
+    .join("");
 }
 
-function renderSortState() {
-  elements.sortFilter.value = state.sortKey ? `${state.sortKey}:${state.sortDirection}` : "";
-  elements.sortButtons.forEach((button) => {
-    const active = button.dataset.sortKey === state.sortKey;
-    button.dataset.sortDirection = active ? state.sortDirection : "";
-  });
+function renderHistory(slabs) {
+  const recent = [...slabs].sort((a, b) => b.purchaseDate.localeCompare(a.purchaseDate)).slice(0, 6);
+  elements.recentAcquisitions.innerHTML = recent
+    .map((slab) => `
+      <article class="acquisition-row">
+        <time datetime="${escapeHtml(slab.purchaseDate)}">${escapeHtml(formatDate(slab.purchaseDate))}</time>
+        <div>
+          <strong>${escapeHtml(slab.card)}</strong>
+          <span>${escapeHtml(slab.grade)} · ${escapeHtml(slab.set)}</span>
+        </div>
+        <b>${formatCurrency(slab.marketSGD, slab.marketSGD > 999)}</b>
+      </article>
+    `)
+    .join("");
+
+  const timeline = recent.slice().reverse();
+  elements.collectionTimeline.innerHTML = timeline
+    .map((slab) => `
+      <article>
+        <time datetime="${escapeHtml(slab.purchaseDate)}">${escapeHtml(formatDate(slab.purchaseDate))}</time>
+        <strong>${escapeHtml(slab.card)}</strong>
+        <span>${escapeHtml(slab.grade)}</span>
+      </article>
+    `)
+    .join("");
+
+  const psa10 = slabs.filter((slab) => slab.grade.toUpperCase() === "PSA 10").length;
+  const vaulted = slabs.filter((slab) => slab.status === "Vaulted").length;
+  const highest = topByMarket(slabs, 1)[0];
+  elements.milestones.innerHTML = [
+    ["First major grail", highest.card, formatCurrency(highest.marketSGD, true)],
+    ["Vault milestone", `${vaulted} slabs currently vaulted`, "Custody"],
+    ["PSA quality marker", `${psa10} PSA 10 slabs`, "Grade"],
+    ["Registry scale", `${slabs.length} documented slabs`, "Archive"],
+  ]
+    .map(([title, body, meta]) => `
+      <article class="milestone">
+        <span>${escapeHtml(meta)}</span>
+        <div><strong>${escapeHtml(title)}</strong><p>${escapeHtml(body)}</p></div>
+      </article>
+    `)
+    .join("");
 }
 
-function renderFilterState() {
-  elements.statusFilter.value = state.status;
-  elements.graderFilter.value = state.grader;
-  elements.setFilter.value = state.set;
-  elements.graderChips.forEach((chip) => {
-    chip.classList.toggle("active", chip.dataset.graderChip === state.grader);
-  });
-  const count = [state.status !== "all", state.grader !== "all", state.set !== "all", Boolean(state.query.trim())].filter(Boolean).length;
-  elements.activeFilterCount.textContent = String(count);
-}
+function renderInsights(slabs) {
+  const psa10 = slabs.filter((slab) => slab.grade.toUpperCase() === "PSA 10").length;
+  const grails = slabs.filter((slab) => slab.marketSGD >= 300).length;
+  const blackLabelCandidates = slabs.filter((slab) => /black|bwr|munch|poncho|van gogh/i.test(`${slab.card} ${slab.set}`)).length;
 
-function selectSlab(cert) {
-  state.selectedCert = cert;
-  render();
-}
+  elements.rarityStats.innerHTML = [
+    ["PSA 10", psa10, "Investment-grade slab count"],
+    ["Grails", grails, "Market value above S$300"],
+    ["Signature themes", blackLabelCandidates, "Munch, Poncho, BWR, Van Gogh"],
+  ]
+    .map(([label, value, copy]) => `
+      <div>
+        <strong>${escapeHtml(value)}</strong>
+        <span>${escapeHtml(label)}</span>
+        <p>${escapeHtml(copy)}</p>
+      </div>
+    `)
+    .join("");
 
-function getSelectedSlab(slabs = state.slabs) {
-  return slabs.find((slab) => slab.cert === state.selectedCert) || topByMarket(slabs, 1)[0];
+  elements.topPerformers.innerHTML = topByMarket(slabs, 4)
+    .map((slab) => `
+      <div class="performer-row">
+        <span>${escapeHtml(slab.card)}</span>
+        <strong>${formatCurrency(slab.marketSGD, slab.marketSGD > 999)}</strong>
+      </div>
+    `)
+    .join("");
 }
 
 function renderTable(slabs) {
   if (!slabs.length) {
-    elements.body.innerHTML = '<tr><td colspan="9" class="empty">No slabs match the current filters.</td></tr>';
+    elements.body.innerHTML = '<tr><td colspan="10" class="empty">No slabs match the current filters.</td></tr>';
     return;
   }
 
   elements.body.innerHTML = slabs
     .map((slab) => {
-      const { gain, gainPercent } = getGain(slab);
-      const statusClass = getStatusClass(slab.status);
-      const selected = slab.cert === state.selectedCert;
+      const gain = slab.marketSGD - slab.paidSGD;
+      const gainPercent = slab.paidSGD ? (gain / slab.paidSGD) * 100 : 0;
+      const statusClass = slab.status.toLowerCase().replaceAll(" ", "-");
+      const marketSource = slab.marketSourceUrl
+        ? `<a href="${escapeHtml(slab.marketSourceUrl)}" target="_blank" rel="noreferrer">${escapeHtml(slab.marketSourceName || "Source")}</a>`
+        : escapeHtml(slab.marketSourceName || "No source");
+
       return `
-        <tr class="${selected ? "is-selected" : ""}" data-cert="${escapeHtml(slab.cert)}" tabindex="0">
-          <td><span class="checkbox-marker ${selected ? "checked" : ""}" aria-hidden="true"></span></td>
-          <td class="card-cell">
-            ${imageMarkup(slab)}
-            <span>
-              <strong>${escapeHtml(getDisplayTitle(slab))}</strong>
-              <small>${escapeHtml(slab.set || "Unknown set")}</small>
-              <small>${escapeHtml(getItemNumber(slab) || "No card no.")}</small>
-            </span>
+        <tr>
+          <td class="date-cell" data-label="Purchase Date">${escapeHtml(slab.purchaseDate)}</td>
+          <td class="slab-image-cell" data-label="Slab">${formatSlabImage(slab)}</td>
+          <td class="card-name" data-label="Card">
+            ${escapeHtml(slab.card)}
+            <span class="subtle">${escapeHtml(slab.set)}</span>
           </td>
-          <td>${formatCert(slab)}</td>
-          <td><span class="${getGradeClass(slab.grade)}">${escapeHtml(slab.grade)}</span></td>
-          <td class="numeric">${formatCurrency(slab.paidSGD)}</td>
-          <td class="numeric">${formatCurrency(slab.marketSGD)} <i class="${gainClass(gain)} dot"></i></td>
-          <td class="numeric">${formatGain(gain)}</td>
-          <td class="numeric">${formatPercent(gainPercent)}</td>
-          <td><span class="status ${statusClass}">${escapeHtml(slab.status)}</span></td>
+          <td data-label="Cert">${formatCert(slab)}</td>
+          <td data-label="Grade">${escapeHtml(slab.grade)}</td>
+          <td class="numeric" data-label="Paid SGD">${formatCurrency(slab.paidSGD)}</td>
+          <td class="numeric" data-label="Market SGD">
+            ${formatCurrency(slab.marketSGD)}
+            <span class="subtle">${marketSource}${slab.marketDate ? ` | ${escapeHtml(slab.marketDate)}` : ""}</span>
+          </td>
+          <td class="numeric" data-label="Gain/Loss SGD">${formatGain(gain)}</td>
+          <td class="numeric" data-label="Gain/Loss %">${formatPercent(gainPercent)}</td>
+          <td data-label="Delivered/Vaulted"><span class="status ${statusClass}">${escapeHtml(slab.status)}</span></td>
         </tr>
       `;
     })
     .join("");
 }
 
-function renderMobileCards(slabs) {
+function renderSlabCards(slabs) {
   if (!slabs.length) {
-    elements.slabCards.innerHTML = '<article class="empty">No slabs match the current filters.</article>';
+    elements.slabCards.innerHTML = '<article class="slab-list-empty">No slabs match the current filters.</article>';
     return;
   }
 
   elements.slabCards.innerHTML = slabs
     .map((slab) => {
-      const { gain, gainPercent } = getGain(slab);
+      const gain = slab.marketSGD - slab.paidSGD;
+      const gainPercent = slab.paidSGD ? (gain / slab.paidSGD) * 100 : 0;
+      const statusClass = slab.status.toLowerCase().replaceAll(" ", "-");
+      const itemNumber = getItemNumber(slab);
+      const language = getLanguage(slab).replace(" / other", "");
+      const sourceLabel = getSourceLabel(slab);
+
       return `
-        <article class="mobile-card ${slab.cert === state.selectedCert ? "is-selected" : ""}" data-cert="${escapeHtml(slab.cert)}">
-          ${imageMarkup(slab, "card")}
-          <div>
-            <h3>${escapeHtml(getDisplayTitle(slab))}</h3>
-            <p>${escapeHtml(slab.set || "Unknown set")}</p>
-            <span class="${getGradeClass(slab.grade)}">${escapeHtml(slab.grade)}</span>
+        <article class="slab-list-card">
+          <div class="slab-list-media">${getCardImageMarkup(slab)}</div>
+          <div class="slab-list-main">
+            <div class="slab-list-title">
+              <h3>${escapeHtml(getDisplayTitle(slab))}${itemNumber ? ` <span>${escapeHtml(itemNumber)}</span>` : ""}</h3>
+              <p class="slab-list-set"><span aria-hidden="true">◎</span>${escapeHtml(`Pokemon ${language} ${slab.set || "Unknown set"}`)}</p>
+              <p class="slab-list-source"><span aria-hidden="true">▢</span>${escapeHtml(sourceLabel)}</p>
+            </div>
+            <div class="slab-list-meta">
+              <strong>${escapeHtml(slab.grade)}</strong>
+              <span>Cert ${formatCert(slab)}</span>
+              <span class="status ${statusClass}">${escapeHtml(slab.status)}</span>
+            </div>
           </div>
-          <dl>
-            <div><dt>Value</dt><dd>${formatCurrency(slab.marketSGD)}</dd></div>
-            <div><dt>Gain</dt><dd>${formatGain(gain)} ${formatPercent(gainPercent)}</dd></div>
+          <dl class="slab-list-values">
+            <div>
+              <dt>Value</dt>
+              <dd>${formatCurrency(slab.marketSGD)}</dd>
+              <small>${formatGain(gain)} · ${formatPercent(gainPercent)}</small>
+            </div>
+            <div>
+              <dt>Cost</dt>
+              <dd>${formatCurrency(slab.paidSGD)}</dd>
+              <small>${escapeHtml(formatDate(slab.purchaseDate))}</small>
+            </div>
           </dl>
         </article>
       `;
@@ -369,113 +596,38 @@ function renderMobileCards(slabs) {
     .join("");
 }
 
-function renderDetail(slabs) {
-  const slab = getSelectedSlab(slabs);
-  if (!slab) {
-    elements.detailContent.innerHTML = '<p class="empty">Select a slab to view details.</p>';
-    return;
-  }
-  state.selectedCert = slab.cert;
-  const { gain, gainPercent } = getGain(slab);
-  const statusClass = getStatusClass(slab.status);
-  const source = slab.marketSourceName || "Invoice baseline";
-  const invoice = slab.invoiceId ? `INV-${slab.marketDate || slab.purchaseDate}-${slab.invoiceId.slice(-4)}` : "Documented";
-  const certUrl = getCertUrl(slab);
-
-  elements.detailContent.innerHTML = `
-    <section class="drawer-heading">
-      <h1>${escapeHtml(getDisplayTitle(slab))}</h1>
-      <p>${escapeHtml(slab.set || "Unknown set")}</p>
-      <div>
-        <span class="${getGradeClass(slab.grade)}">${escapeHtml(slab.grade)}</span>
-        <span>Cert # ${formatCert(slab)}</span>
-      </div>
-    </section>
-
-    <div class="drawer-slab-image">${imageMarkup(slab, "hero")}</div>
-
-    <div class="drawer-actions">
-      <button type="button">Add to Watchlist</button>
-      <button type="button">Share</button>
-    </div>
-
-    <section class="valuation-card">
-      <h2>Valuation History (SGD)</h2>
-      <div class="range-tabs" aria-label="Chart range">
-        <button type="button">7D</button>
-        <button type="button">30D</button>
-        <button class="active" type="button">90D</button>
-        <button type="button">1Y</button>
-        <button type="button">All</button>
-      </div>
-      <div class="line-chart">${renderLineChart(slab)}</div>
-      <dl>
-        <div><dt>Market</dt><dd>${formatCurrency(slab.marketSGD)} <i class="${gainClass(gain)} dot"></i></dd></div>
-        <div><dt>Change</dt><dd>${formatGain(gain)} (${formatPercent(gainPercent)})</dd></div>
-      </dl>
-    </section>
-
-    <section class="provenance-card">
-      <h2>Provenance</h2>
-      <dl>
-        <div><dt>Source</dt><dd>${escapeHtml(source)}</dd></div>
-        <div><dt>Invoice Date</dt><dd>${escapeHtml(slab.marketDate || slab.purchaseDate || "-")}</dd></div>
-        <div><dt>Invoice #</dt><dd>${escapeHtml(invoice)}</dd></div>
-        <div><dt>Added to Vault</dt><dd>${escapeHtml(slab.purchaseDate || "-")}</dd></div>
-        <div><dt>Status</dt><dd><span class="status ${statusClass}">${escapeHtml(slab.status)}</span></dd></div>
-      </dl>
-    </section>
-
-    ${certUrl ? `<a class="registry-link" href="${escapeHtml(certUrl)}" target="_blank" rel="noreferrer">View on ${escapeHtml(getCompany(slab.grade))} Registry</a>` : ""}
-  `;
-}
-
-function renderLineChart(slab) {
-  const seed = String(slab.cert || "")
-    .split("")
-    .reduce((sum, char) => sum + char.charCodeAt(0), 0);
-  const { gainPercent } = getGain(slab);
-  const points = Array.from({ length: 24 }, (_, index) => {
-    const wave = Math.sin((seed + index * 4) / 7) * 13;
-    const lift = Math.max(-18, Math.min(32, gainPercent / 3));
-    return Math.max(16, Math.min(92, 42 + wave + lift + index * 0.9));
-  });
-  const coordinates = points.map((value, index) => `${(index / (points.length - 1)) * 100},${100 - value}`).join(" ");
-  return `<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-    <polyline points="${coordinates}"></polyline>
-    <line x1="0" y1="25" x2="100" y2="25"></line>
-    <line x1="0" y1="50" x2="100" y2="50"></line>
-    <line x1="0" y1="75" x2="100" y2="75"></line>
-  </svg>`;
+function renderStaticSections() {
+  const slabs = state.slabs;
+  renderFeaturedGrails(slabs);
+  renderOverview(slabs);
+  renderAnalytics(slabs);
+  renderProvenance(slabs);
+  renderHistory(slabs);
+  renderInsights(slabs);
 }
 
 function render() {
-  const filtered = getSortedSlabs(getFilteredSlabs());
-  if (!state.selectedCert && filtered.length) state.selectedCert = topByMarket(filtered, 1)[0].cert;
-  if (filtered.length && !filtered.some((slab) => slab.cert === state.selectedCert)) state.selectedCert = filtered[0].cert;
-
+  const slabs = getSortedSlabs(getFilteredSlabs());
   renderSortState();
-  renderFilterState();
-  renderMetricCards(state.slabs);
-  renderTable(filtered);
-  renderMobileCards(filtered);
-  renderDetail(filtered);
-  elements.resultCount.textContent = filtered.length ? `1-${Math.min(filtered.length, 25)} of ${filtered.length}` : "0 results";
+  renderSlabCards(slabs);
+  renderTable(slabs);
 }
 
 async function loadSlabs() {
   try {
     const response = await fetch("data/slabs.json", { cache: "no-store" });
     if (!response.ok) throw new Error(`Unable to load slabs.json: ${response.status}`);
+
     const data = await response.json();
     state.slabs = data.slabs;
-    renderSetOptions(state.slabs);
-    state.selectedCert = "";
+    elements.lastUpdated.textContent = `Updated ${data.lastUpdated}`;
+    elements.analyticsDate.textContent = `As of ${data.lastUpdated}`;
+    renderStaticSections();
     render();
   } catch (error) {
-    elements.body.innerHTML = `<tr><td colspan="9" class="empty">${escapeHtml(error.message)}</td></tr>`;
-    elements.slabCards.innerHTML = `<article class="empty">${escapeHtml(error.message)}</article>`;
-    elements.detailContent.innerHTML = `<p class="empty">${escapeHtml(error.message)}</p>`;
+    elements.lastUpdated.textContent = "Data failed to load";
+    elements.slabCards.innerHTML = `<article class="slab-list-empty">${escapeHtml(error.message)}</article>`;
+    elements.body.innerHTML = `<tr><td colspan="10" class="empty">${escapeHtml(error.message)}</td></tr>`;
   }
 }
 
@@ -489,73 +641,24 @@ elements.statusFilter.addEventListener("change", (event) => {
   render();
 });
 
-elements.graderFilter.addEventListener("change", (event) => {
-  state.grader = event.target.value;
-  render();
-});
-
-elements.setFilter.addEventListener("change", (event) => {
-  state.set = event.target.value;
-  render();
-});
-
 elements.sortFilter.addEventListener("change", (event) => {
   const [sortKey, sortDirection] = event.target.value.split(":");
-  state.sortKey = sortKey || "purchaseDate";
-  state.sortDirection = sortDirection || "desc";
+  state.sortKey = sortKey || "";
+  state.sortDirection = sortDirection || "asc";
   render();
 });
 
 elements.sortButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const nextKey = button.dataset.sortKey;
-    if (state.sortKey === nextKey) state.sortDirection = state.sortDirection === "asc" ? "desc" : "asc";
-    else {
+    if (state.sortKey === nextKey) {
+      state.sortDirection = state.sortDirection === "asc" ? "desc" : "asc";
+    } else {
       state.sortKey = nextKey;
       state.sortDirection = "asc";
     }
     render();
   });
-});
-
-elements.graderChips.forEach((chip) => {
-  chip.addEventListener("click", () => {
-    state.grader = state.grader === chip.dataset.graderChip ? "all" : chip.dataset.graderChip;
-    render();
-  });
-});
-
-elements.clearFilters.addEventListener("click", () => {
-  state.query = "";
-  state.status = "all";
-  state.grader = "all";
-  state.set = "all";
-  elements.searchInput.value = "";
-  render();
-});
-
-elements.body.addEventListener("click", (event) => {
-  if (event.target.closest("a, button")) return;
-  const row = event.target.closest("[data-cert]");
-  if (row) selectSlab(row.dataset.cert);
-});
-
-elements.body.addEventListener("keydown", (event) => {
-  if (event.key !== "Enter" && event.key !== " ") return;
-  const row = event.target.closest("[data-cert]");
-  if (!row) return;
-  event.preventDefault();
-  selectSlab(row.dataset.cert);
-});
-
-elements.slabCards.addEventListener("click", (event) => {
-  if (event.target.closest("a, button")) return;
-  const card = event.target.closest("[data-cert]");
-  if (card) selectSlab(card.dataset.cert);
-});
-
-elements.drawerClose.addEventListener("click", () => {
-  elements.detailDrawer.classList.toggle("is-collapsed");
 });
 
 loadSlabs();
