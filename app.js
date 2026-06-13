@@ -4,6 +4,7 @@ const state = {
   status: "all",
   sortKey: "",
   sortDirection: "asc",
+  selectedCert: "",
 };
 
 const currencyFormatter = new Intl.NumberFormat("en-SG", {
@@ -47,6 +48,9 @@ const elements = {
   statusFilter: document.querySelector("#statusFilter"),
   sortFilter: document.querySelector("#sortFilter"),
   sortButtons: document.querySelectorAll("[data-sort-key]"),
+  slabDetailDrawer: document.querySelector("#slabDetailDrawer"),
+  slabDetailContent: document.querySelector("#slabDetailContent"),
+  detailClose: document.querySelector("#detailClose"),
   featuredGrails: document.querySelector("#featuredGrails"),
   gradingBreakdown: document.querySelector("#gradingBreakdown"),
   eraBreakdown: document.querySelector("#eraBreakdown"),
@@ -116,6 +120,14 @@ function formatCert(slab) {
   return cert;
 }
 
+function getCertUrl(slab) {
+  const cert = encodeURIComponent(slab.cert);
+  const grade = String(slab.grade ?? "").toUpperCase();
+  if (grade.startsWith("PSA")) return `https://www.psacard.com/cert/${cert}/psa`;
+  if (grade.startsWith("ACE")) return "https://acegrading.com/cert";
+  return "";
+}
+
 function formatSlabImage(slab, size = "table") {
   const frontUrl = slab.slabImageUrl;
 
@@ -166,6 +178,16 @@ function getCardImageMarkup(slab) {
       <img src="${escapeHtml(slab.slabImageUrl)}" alt="Slab image for ${escapeHtml(slab.card)}" loading="lazy">
     </a>
   `;
+}
+
+function getSelectedSlab() {
+  return state.slabs.find((slab) => slab.cert === state.selectedCert) || topByMarket(state.slabs, 1)[0];
+}
+
+function getSlabGain(slab) {
+  const gain = slab.marketSGD - slab.paidSGD;
+  const gainPercent = slab.paidSGD ? (gain / slab.paidSGD) * 100 : 0;
+  return { gain, gainPercent };
 }
 
 function getCompany(grade) {
@@ -495,6 +517,62 @@ function renderInsights(slabs) {
     .join("");
 }
 
+function renderSparkline(slab) {
+  const seed = String(slab.cert || "")
+    .split("")
+    .reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  const { gainPercent } = getSlabGain(slab);
+  const bias = Math.max(-18, Math.min(18, gainPercent || 0));
+  return Array.from({ length: 12 }, (_, index) => {
+    const wave = Math.sin((seed + index * 7) / 8) * 16;
+    const value = Math.max(14, Math.min(92, 46 + wave + bias + index * 2));
+    return `<span style="height:${value}%"></span>`;
+  }).join("");
+}
+
+function renderDetailDrawer() {
+  const slab = getSelectedSlab();
+  if (!slab) return;
+
+  const { gain, gainPercent } = getSlabGain(slab);
+  const statusClass = slab.status.toLowerCase().replaceAll(" ", "-");
+  const certUrl = getCertUrl(slab);
+  state.selectedCert = slab.cert;
+  elements.slabDetailDrawer?.classList.add("is-open");
+  elements.slabDetailContent.innerHTML = `
+    <div class="detail-hero">
+      <div class="detail-image">${formatSlabImage(slab, "large")}</div>
+      <div>
+        <p class="eyebrow">Selected slab</p>
+        <h2>${escapeHtml(getDisplayTitle(slab))}</h2>
+        <p>${escapeHtml(slab.set)} · ${escapeHtml(slab.grade)}</p>
+        <span class="status ${statusClass}">${escapeHtml(slab.status)}</span>
+      </div>
+    </div>
+
+    <dl class="detail-metrics">
+      <div><dt>Market value</dt><dd>${formatCurrency(slab.marketSGD)}</dd></div>
+      <div><dt>Cost basis</dt><dd>${formatCurrency(slab.paidSGD)}</dd></div>
+      <div><dt>Gain / loss</dt><dd>${formatGain(gain)}</dd></div>
+      <div><dt>Gain / loss %</dt><dd>${formatPercent(gainPercent)}</dd></div>
+    </dl>
+
+    <div class="detail-sparkline" aria-label="Indicative valuation trend">${renderSparkline(slab)}</div>
+
+    <div class="detail-actions">
+      ${certUrl ? `<a class="button primary" href="${escapeHtml(certUrl)}" target="_blank" rel="noreferrer">Open cert</a>` : ""}
+      ${slab.marketSourceUrl ? `<a class="button secondary" href="${escapeHtml(slab.marketSourceUrl)}" target="_blank" rel="noreferrer">Market source</a>` : ""}
+    </div>
+
+    <dl class="detail-provenance">
+      <div><dt>Cert</dt><dd>${formatCert(slab)}</dd></div>
+      <div><dt>Purchase date</dt><dd>${escapeHtml(formatDate(slab.purchaseDate))}</dd></div>
+      <div><dt>Invoice</dt><dd>${escapeHtml(slab.invoiceId || "Documented")}</dd></div>
+      <div><dt>Price source</dt><dd>${escapeHtml(slab.marketSourceName || "Documented")}</dd></div>
+    </dl>
+  `;
+}
+
 function renderTable(slabs) {
   if (!slabs.length) {
     elements.body.innerHTML = '<tr><td colspan="10" class="empty">No slabs match the current filters.</td></tr>';
@@ -511,7 +589,7 @@ function renderTable(slabs) {
         : escapeHtml(slab.marketSourceName || "No source");
 
       return `
-        <tr>
+        <tr data-cert="${escapeHtml(slab.cert)}" class="${slab.cert === state.selectedCert ? "is-selected" : ""}" tabindex="0">
           <td class="date-cell" data-label="Purchase Date">${escapeHtml(slab.purchaseDate)}</td>
           <td class="slab-image-cell" data-label="Slab">${formatSlabImage(slab)}</td>
           <td class="card-name" data-label="Card">
@@ -548,9 +626,10 @@ function renderSlabCards(slabs) {
       const itemNumber = getItemNumber(slab);
       const language = getLanguage(slab).replace(" / other", "");
       const sourceLabel = getSourceLabel(slab);
+      const isSelected = slab.cert === state.selectedCert;
 
       return `
-        <article class="slab-list-card">
+        <article class="slab-list-card ${isSelected ? "is-expanded" : ""}" data-cert="${escapeHtml(slab.cert)}">
           <div class="slab-list-media">${getCardImageMarkup(slab)}</div>
           <div class="slab-list-main">
             <div class="slab-list-title">
@@ -576,6 +655,16 @@ function renderSlabCards(slabs) {
               <small>${escapeHtml(formatDate(slab.purchaseDate))}</small>
             </div>
           </dl>
+          ${isSelected ? `
+            <div class="mobile-expanded-panel">
+              <div class="detail-sparkline" aria-label="Indicative valuation trend">${renderSparkline(slab)}</div>
+              <div class="detail-actions">
+                ${getCertUrl(slab) ? `<a class="button primary" href="${escapeHtml(getCertUrl(slab))}" target="_blank" rel="noreferrer">Cert</a>` : ""}
+                ${slab.marketSourceUrl ? `<a class="button secondary" href="${escapeHtml(slab.marketSourceUrl)}" target="_blank" rel="noreferrer">Source</a>` : ""}
+                <button class="button secondary compare-action" type="button">Compare</button>
+              </div>
+            </div>
+          ` : ""}
         </article>
       `;
     })
@@ -595,6 +684,7 @@ function renderStaticSections() {
 function render() {
   const slabs = getSortedSlabs(getFilteredSlabs());
   renderSortState();
+  renderDetailDrawer();
   renderSlabCards(slabs);
   renderTable(slabs);
 }
@@ -606,6 +696,7 @@ async function loadSlabs() {
 
     const data = await response.json();
     state.slabs = data.slabs;
+    state.selectedCert = topByMarket(state.slabs, 1)[0]?.cert || "";
     elements.lastUpdated.textContent = `Updated ${data.lastUpdated}`;
     elements.analyticsDate.textContent = `As of ${data.lastUpdated}`;
     renderStaticSections();
@@ -645,6 +736,35 @@ elements.sortButtons.forEach((button) => {
     }
     render();
   });
+});
+
+elements.body.addEventListener("click", (event) => {
+  if (event.target.closest("a, button")) return;
+  const row = event.target.closest("[data-cert]");
+  if (!row) return;
+  state.selectedCert = row.dataset.cert;
+  render();
+});
+
+elements.body.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  const row = event.target.closest("[data-cert]");
+  if (!row) return;
+  event.preventDefault();
+  state.selectedCert = row.dataset.cert;
+  render();
+});
+
+elements.slabCards.addEventListener("click", (event) => {
+  if (event.target.closest("a, button")) return;
+  const card = event.target.closest("[data-cert]");
+  if (!card) return;
+  state.selectedCert = state.selectedCert === card.dataset.cert ? state.selectedCert : card.dataset.cert;
+  render();
+});
+
+elements.detailClose.addEventListener("click", () => {
+  elements.slabDetailDrawer?.classList.remove("is-open");
 });
 
 loadSlabs();
